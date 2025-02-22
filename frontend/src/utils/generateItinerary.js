@@ -51,8 +51,8 @@ const fetchWeather = async (city) => {
             humidity: `${weatherData.main.humidity}%`,
             packingTips: [
                 "Comfortable shoes",
-                weatherData.main.temp < 15 ? "Warm clothes" : "Light clothing",
-                weatherData.weather[0].main === "Rain" ? "Umbrella" : "Sunglasses",
+                weatherData.main.temp < 15 ? "Warm clothes " : "Light clothing ",
+                weatherData.weather[0].main === "Rain" ? "Umbrella " : "Sunglasses ",
             ].filter(Boolean) // Remove empty values
         };
     } catch (error) {
@@ -70,46 +70,63 @@ const generateItinerary = async (formData, setIsLoading, navigate) => {
 
     setIsLoading(true);
     try {
+
+        const departureDate = new Date(formData.startDate);
+        const returnDate = new Date(formData.endDate);
+
+        const travelTimeHours = 0; 
+
+        const travelDays = Math.ceil(travelTimeHours / 24);
+
+        const totalDays = Math.max(
+            (returnDate - departureDate) / (1000 * 60 * 60 * 24) + 1, // Trip duration in days
+            travelDays + 1 // Ensure at least 1 full day
+        );
+
         const prompt = `Plan a detailed travel itinerary for the following details. Ensure the response strictly follows the JSON structure below, but **keep it concise** to fit within 4000 characters:
 
-- Destination: ${formData.destination}
-- Departure city: ${formData.startLocation}
-- Travel dates: ${formData.startDate.toLocaleDateString()} to ${formData.endDate.toLocaleDateString()}
-- Budget: ${formData.budget.label}
-- Travel Style: ${formData.travelStyle.label}
+                        - Destination: ${formData.destination}
+                        - Departure city: ${formData.startLocation}
+                        - Travel dates: ${formData.startDate.toLocaleDateString()} to ${formData.endDate.toLocaleDateString()}
+                        - Budget: ${formData.budget.label}
+                        - Travel Style: ${formData.travelStyle.label}
+                        - Number of days: ${totalDays}
 
-### **Required JSON Structure**
-{
-  "title": "Trip to ${formData.destination}",
-  "type": "Type of trip (solo, family, business, etc.)",
-  "purpose": "Purpose of the visit",
-  "days": [
-    {
-      "day": 1,
-      "activities": [
-        {
-          "time": "Time in HH:MM AM/PM format",
-          "activity": "Short activity name",
-          "details": "Brief description (Max: 20 words)"
-        }
-      ]
-    }
-  ],
-  "flights": [
-    {
-      "airline": "Airline Name",
-      "departure": "Departure Time in ISO format",
-      "arrival": "Arrival Time in ISO format",
-      "price": "Estimated price"
-    }
-  ],
-}
+                        ### **Required JSON Structure**
+                        {
+                        "title": "Trip to ${formData.destination}",
+                        "type": "Type of trip (solo, family, business, etc.)",
+                        "purpose": "Purpose of the visit",
+                        "days": [
+                            ${Array.from({ length: totalDays }, (_, i) => `
+                            {
+                                "day": ${i + 1},
+                                "activities": [
+                                {
+                                    "time": "09:00 AM",
+                                    "activity": "Example Activity",
+                                    "details": "Brief description (Max: 20 words)"
+                                }
+                                ]
+                            }
+                            `).join(",")}
+                        ],
+                        "flights": [
+                            {
+                            "airline": "Airline Name",
+                            "departure": "Departure Time in ISO format",
+                            "arrival": "Arrival Time in ISO format",
+                            "price": "Estimated price"
+                            }
+                        ]
+                        }
 
-### **Rules**
-1. Keep the JSON response **under 4000 characters**.
-2. Limit activities to **max 3 per day**.
-3. Ensure JSON is properly formatted and valid.
-4. If data is unavailable, return an empty array [] or null.`;
+                        ### **Rules**
+                        1. Keep the JSON response **under 4000 characters**.
+                        2. Limit activities to **max 3 per day**.
+                        3. Ensure JSON is properly formatted and valid.
+                        4. If data is unavailable, return an empty array [] or null.
+                        `;
 
         const fetchItinerary = async () => {
             const model = genAI.getGenerativeModel({ model: "gemini-pro" });

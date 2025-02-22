@@ -268,7 +268,7 @@ function ItineraryPage() {
                   </div>
                 </div>
                 <div className="flight-price">
-                  <strong>Price:</strong> ₹{flight.price.toLocaleString()}
+                  <strong>Price:</strong> {flight.price.toLocaleString()}
                 </div>
                 <div className="flight-details">{flight.details}</div>
               </div>
