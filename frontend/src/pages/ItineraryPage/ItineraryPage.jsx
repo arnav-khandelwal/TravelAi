@@ -1,9 +1,88 @@
-import { useEffect, useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { motion } from 'framer-motion';
 import './ItineraryPage.css';
+import { FaPlane, FaChevronLeft, FaChevronRight } from 'react-icons/fa';
 
 function ItineraryPage() {
   const [itineraryData, setItineraryData] = useState(null);
+  const [scrolled, setScrolled] = useState(false);
+  const [currentDayIndex, setCurrentDayIndex] = useState(0);
+  const [isDragging, setIsDragging] = useState(false);
+  const [startX, setStartX] = useState(0);
+  const [currentTranslate, setCurrentTranslate] = useState(0);
+  const [prevTranslate, setPrevTranslate] = useState(0);
+  const [animationClass, setAnimationClass] = useState('');
+  const slideRef = useRef(null);
+
+  const handleNext = () => {
+    setAnimationClass('slide-left');
+    setTimeout(() => {
+      setCurrentDayIndex((currentDayIndex + 1) % days.length);
+      setAnimationClass('');
+    }, 500);
+  };
+
+  const handlePrevious = () => {
+    setAnimationClass('slide-right');
+    setTimeout(() => {
+      setCurrentDayIndex((currentDayIndex - 1 + days.length) % days.length);
+      setAnimationClass('');
+    }, 500);
+  };
+
+  const handleMouseDown = (e) => {
+    setIsDragging(true);
+    setStartX(e.pageX);
+    setPrevTranslate(currentTranslate);
+  };
+
+  const handleMouseMove = (e) => {
+    if (isDragging) {
+      const currentPosition = e.pageX;
+      const diff = currentPosition - startX;
+      setCurrentTranslate(prevTranslate + diff);
+    }
+  };
+
+  const handleMouseUp = () => {
+    setIsDragging(false);
+    const movedBy = currentTranslate - prevTranslate;
+    if (movedBy < -100) {
+      handleNext();
+    } else if (movedBy > 100) {
+      handlePrevious();
+    }
+    setCurrentTranslate(0);
+    setPrevTranslate(0);
+  };
+
+  useEffect(() => {
+    const slide = slideRef.current;
+    if (slide) {
+      slide.addEventListener('mousedown', handleMouseDown);
+      slide.addEventListener('mousemove', handleMouseMove);
+      slide.addEventListener('mouseup', handleMouseUp);
+      slide.addEventListener('mouseleave', handleMouseUp);
+    }
+
+    return () => {
+      if (slide) {
+        slide.removeEventListener('mousedown', handleMouseDown);
+        slide.removeEventListener('mousemove', handleMouseMove);
+        slide.removeEventListener('mouseup', handleMouseUp);
+        slide.removeEventListener('mouseleave', handleMouseUp);
+      }
+    };
+  }, [isDragging, currentTranslate]);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      setScrolled(window.scrollY > 50);
+    };
+
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
 
   useEffect(() => {
     try {
@@ -47,42 +126,55 @@ function ItineraryPage() {
       transition={{ duration: 0.6 }}
     >
       {/* Title Section */}
+      <header className={`header ${scrolled ? 'scrolled' : ''}`}>
+                <div className="logo">
+                  <FaPlane className="logo-icon" />
+                  TravelAI
+                </div>
+                <div className="auth-buttons">
+                  <button className="sign-in-btn">Sign In</button>
+                  <button className="sign-up-btn">Sign Up</button>
+                </div>
+      </header>
       <header className="itinerary-header">
+      <br/><br/><br/>
         <h1>{itineraryData.title}</h1>
       </header>
 
-      {/* Flight Details Section */}
-      <section className="section flights-section">
-        <h2>Flight Information</h2>
-        <div className="flights-grid">
-          {flights.length > 0 ? (
-            flights.map((flight, index) => (
-              <div key={index} className="flight-card">
-                <div className="flight-header">
-                  <h3>{flight.airline}</h3>
-                  <span className="flight-number">Flight {flight.flightNumber}</span>
+        {/* Daily Itinerary Section */}
+        <section className="section daily-section">
+        <h2>Daily Itinerary</h2>
+        {days.length > 0 ? (
+            <div className="slideshow" ref={slideRef}>
+            <div className={`day-card ${animationClass}`}>
+                <div className="day-header">
+                <button className="nav-button" onClick={handlePrevious}>
+                    <FaChevronLeft />
+                </button>
+                <h3>Day {days[currentDayIndex].day}</h3>
+                <button className="nav-button" onClick={handleNext}>
+                    <FaChevronRight />
+                </button>
                 </div>
-                <div className="flight-times">
-                  <div>
-                    <strong>Departure:</strong> {formatDateTime(flight.departure)}
-                  </div>
-                  <div>
-                    <strong>Arrival:</strong> {formatDateTime(flight.arrival)}
-                  </div>
+                <div className="timeline">
+                {days[currentDayIndex].activities.map((activity, index) => (
+                    <div key={index} className="timeline-item">
+                    <div className="timeline-time">{activity.time}</div>
+                    <div className="timeline-content">
+                        <h4>{activity.activity}</h4>
+                        <p>{activity.details}</p>
+                    </div>
+                    </div>
+                ))}
                 </div>
-                <div className="flight-price">
-                  <strong>Price:</strong> ₹{flight.price.toLocaleString()}
-                </div>
-                <div className="flight-details">{flight.details}</div>
-              </div>
-            ))
-          ) : (
-            <p>No flight details available.</p>
-          )}
-        </div>
-      </section>
+            </div>
+            </div>
+        ) : (
+            <p>No itinerary available.</p>
+        )}
+        </section>
 
-      {/* Weather Section */}
+        {/* Weather Section */}
       <section className="section weather-section">
         <h2>Weather Information</h2>
         <div className="weather-card">
@@ -122,29 +214,35 @@ function ItineraryPage() {
         </div>
       </section>
 
-      {/* Daily Itinerary Section */}
-      <section className="section daily-section">
-        <h2>Daily Itinerary</h2>
-        {days.length > 0 ? (
-          days.map((day) => (
-            <div key={day.day} className="day-card">
-              <h3>Day {day.day}</h3>
-              <div className="timeline">
-                {day.activities.map((activity, index) => (
-                  <div key={index} className="timeline-item">
-                    <div className="timeline-time">{activity.time}</div>
-                    <div className="timeline-content">
-                      <h4>{activity.activity}</h4>
-                      <p>{activity.details}</p>
-                    </div>
+      {/* Flight Details Section */}
+      <section className="section flights-section">
+        <h2>Flight Information</h2>
+        <div className="flights-grid">
+          {flights.length > 0 ? (
+            flights.map((flight, index) => (
+              <div key={index} className="flight-card">
+                <div className="flight-header">
+                  <h3>{flight.airline}</h3>
+                  <span className="flight-number">Flight {flight.flightNumber}</span>
+                </div>
+                <div className="flight-times">
+                  <div>
+                    <strong>Departure:</strong> {formatDateTime(flight.departure)}
                   </div>
-                ))}
+                  <div>
+                    <strong>Arrival:</strong> {formatDateTime(flight.arrival)}
+                  </div>
+                </div>
+                <div className="flight-price">
+                  <strong>Price:</strong> ₹{flight.price.toLocaleString()}
+                </div>
+                <div className="flight-details">{flight.details}</div>
               </div>
-            </div>
-          ))
-        ) : (
-          <p>No itinerary available.</p>
-        )}
+            ))
+          ) : (
+            <p>No flight details available.</p>
+          )}
+        </div>
       </section>
 
       {/* Action Buttons */}

@@ -153,7 +153,7 @@ function HomePage() {
       parsedData = null;
     }
 
-    if (!parsedData || !parsedData["Daily Plan"] || !parsedData["Flight Details"] || !parsedData["Weather Details"]) {
+    if (!parsedData || !parsedData["days"] || !parsedData["flights"] || !parsedData["weather"]) {
       console.error("Invalid itinerary structure:", cleanedText);
       return;
     }

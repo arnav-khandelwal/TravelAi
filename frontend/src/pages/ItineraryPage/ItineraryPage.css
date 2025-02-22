@@ -273,3 +273,88 @@
       width: 100%;
     }
   }
+  
+  /* Daily itinerary section */
+  .section.daily-section {
+    text-align: center;
+    padding: 20px;
+  }
+  
+  .slideshow {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    max-width: 800px;
+    margin: 0 auto;
+    overflow: hidden;
+    user-select: none;
+  }
+  
+  .day-card {
+    min-width: 100%;
+    transition: transform 0.5s ease-in-out;
+  }
+  
+  .day-header {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+  }
+  
+  .nav-button {
+    background-color: transparent;
+    border: none;
+    font-size: 2rem;
+    cursor: pointer;
+    padding: 10px;
+  }
+  
+  .nav-button:disabled {
+    cursor: not-allowed;
+    opacity: 0.5;
+  }
+  
+  .timeline {
+    margin-top: 20px;
+  }
+  
+  .timeline-item {
+    border-bottom: 1px solid #ddd;
+    padding: 10px 0;
+  }
+  
+  .timeline-time {
+    font-weight: bold;
+  }
+  
+  .timeline-content h4 {
+    margin: 5px 0;
+  }
+  
+  @keyframes slide-left {
+    from {
+      transform: translateX(100%);
+    }
+    to {
+      transform: translateX(0);
+    }
+  }
+  
+  @keyframes slide-right {
+    from {
+      transform: translateX(-100%);
+    }
+    to {
+      transform: translateX(0);
+    }
+  }
+  
+  .slide-left {
+    animation: slide-left 0.5s forwards;
+  }
+  
+  .slide-right {
+    animation: slide-right 0.5s forwards;
+  }
