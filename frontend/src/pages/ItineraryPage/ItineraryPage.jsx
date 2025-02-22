@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { motion } from 'framer-motion';
+import { Link } from 'react-router-dom';
 import './ItineraryPage.css';
 import { FaPlane, FaChevronLeft, FaChevronRight } from 'react-icons/fa';
 
@@ -128,8 +129,10 @@ function ItineraryPage() {
       {/* Title Section */}
       <header className={`header ${scrolled ? 'scrolled' : ''}`}>
                 <div className="logo">
-                  <FaPlane className="logo-icon" />
-                  TravelAI
+                <Link to="/" className="logo-link">
+                <FaPlane className="logo-icon" />
+                <span className="logo-text">TravelAI</span>
+                </Link>
                 </div>
                 <div className="auth-buttons">
                   <button className="sign-in-btn">Sign In</button>
@@ -213,6 +216,60 @@ function ItineraryPage() {
           )}
         </div>
       </section>
+
+        {/* Hotels Section */}
+        <section className="section hotels-section">
+          <h2>Recommended Hotels</h2>
+          <div className="hotels-grid">
+              {[
+              {
+                  name: "The Grand Palace Hotel",
+                  location: "New York, USA",
+                  price: 15000,
+                  rating: 4.5,
+                  amenities: ["Free WiFi", "Breakfast Included", "Swimming Pool"],
+                  image: "https://picsum.photos/200"
+              },
+              {
+                  name: "Seaside Resort & Spa",
+                  location: "Los Angeles, USA",
+                  price: 18000,
+                  rating: 4.8,
+                  amenities: ["Ocean View", "Spa Services", "Airport Shuttle"],
+                  image: "https://picsum.photos/200"
+              },
+              {
+                  name: "Mountain Escape Lodge",
+                  location: "San Francisco, USA",
+                  price: 13000,
+                  rating: 4.3,
+                  amenities: ["Hiking Trails", "Free Parking", "Pet Friendly"],
+                  image: "https://picsum.photos/200"
+              },
+              ].map((hotel, index) => (
+              <div key={index} className="hotel-card">
+                  <div className="hotel-header">
+                  <img src={hotel.image} alt={hotel.name} className="hotel-image" />
+                  <h3>{hotel.name}</h3>
+                  <span className="hotel-location">{hotel.location}</span>
+                  </div>
+                  <div className="hotel-details">
+                  <div>
+                      <strong>Price:</strong> ₹{hotel.price.toLocaleString()} / night
+                  </div>
+                  <div>
+                      <strong>Rating:</strong> ⭐ {hotel.rating}
+                  </div>
+                  <div>
+                      <strong>Amenities:</strong> {hotel.amenities.join(", ")}
+                  </div>
+                  </div>
+              </div>
+              ))}
+          </div>
+        </section>
+
+
 
       {/* Flight Details Section */}
       <section className="section flights-section">

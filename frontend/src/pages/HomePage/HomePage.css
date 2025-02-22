@@ -59,6 +59,58 @@
     font-size: 1.8rem;
   }
   
+.logo-text {
+    color: inherit;
+    text-decoration: none;
+  }
+  
+  /* New styles for the link wrapping the logo */
+  .logo-link {
+    display: flex;
+    align-items: center;
+    text-decoration: none;
+    color: inherit;
+  }
+  .search-form {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    width: 100%;
+    max-width: 600px;
+    margin: 0 auto;
+  }
+  
+  .input-group {
+    display: flex;
+    flex-direction: column;
+  }
+  
+  .search-input {
+    padding: 0.5rem;
+    font-size: 1rem;
+    border: 1px solid;
+    border-radius: 4px;
+  }
+  
+  .search-input.error {
+    border-color: red;
+  }
+  
+  .react-select-container {
+    font-size: 1rem;
+    border-color: #b3b5ba;
+  }
+  
+  .react-select-container.error .react-select__control {
+    border-color: red;
+  }
+  
+  .error-message {
+    color: red;
+    font-size: 0.875rem;
+    margin-top: 0.25rem;
+  }
+
   nav {
     display: flex;
     gap: 2.5rem;
@@ -151,10 +203,28 @@
     margin-bottom: 1.5rem;
     background: linear-gradient(to right, var(--gradient-start), var(--gradient-end));
     -webkit-background-clip: text;
+    background-clip: text;
     color: transparent;
     font-weight: 700;
   }
+  .custom-date-input {
+    display: flex;
+    align-items: center;
+    position: relative;
+  }
   
+  .custom-date-input input {
+    width: 100%;
+    padding-right: 2rem; /* Adjust padding to make space for the icon */
+  }
+  
+  .calendar-icon {
+    position: absolute;
+    right: 0.8rem;
+    pointer-events: none;
+    color: #999; /* Adjust color as needed */
+  }
+
   .hero p {
     font-size: 1.25rem;
     color: var(--light-text);
@@ -187,7 +257,7 @@
     border-radius: 0.5rem;
     font-size: 1rem;
     transition: all 0.3s ease;
-    background: #f9fafb;
+    background: white;
   }
   
   .search-input:focus {
@@ -515,11 +585,11 @@
   .react-datepicker__input-container input {
     width: 100%;
     padding: 0.875rem 1rem;
-    border: 1px solid #e5e7eb;
+    border: 1px solid #b3b5ba;
     border-radius: 0.5rem;
     font-size: 1rem;
     transition: all 0.3s ease;
-    background: #f9fafb;
+    background: white;
   }
   
   .react-datepicker__input-container input:focus {

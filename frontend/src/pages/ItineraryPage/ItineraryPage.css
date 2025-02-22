@@ -49,6 +49,12 @@
     border-radius: 8px;
     padding: 1.5rem;
     border: 1px solid #e9ecef;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+  }
+
+  .flight-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
   }
   
   .flight-header {
@@ -88,6 +94,17 @@
     background: #f8f9fa;
     border-radius: 8px;
     padding: 1.5rem;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+  }
+
+  .weather-item:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  }
+
+  .packing-tips:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
   }
   
   .weather-grid {
@@ -102,6 +119,8 @@
     background: #fff;
     border-radius: 6px;
     border: 1px solid #e9ecef;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+
   }
   
   .packing-tips {
@@ -109,6 +128,7 @@
     border-radius: 6px;
     padding: 1.5rem;
     border: 1px solid #e9ecef;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
   }
   
   .packing-tips h3 {
@@ -122,6 +142,11 @@
     border-radius: 8px;
     padding: 1.5rem;
     margin-bottom: 1.5rem;
+  }
+  
+  .timeline-content:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
   }
   
   .day-card h3 {
@@ -166,12 +191,19 @@
     color: #4a90e2;
     margin-bottom: 0.5rem;
   }
-  
+  .hotel-image {
+    width: 100%;
+    height: 200px;
+    object-fit: cover;
+    border-radius: 8px;
+  }
   .timeline-content {
     background: #fff;
     border-radius: 6px;
     padding: 1rem;
     border: 1px solid #e9ecef;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+
   }
   
   .timeline-content h4 {
@@ -358,3 +390,108 @@
   .slide-right {
     animation: slide-right 0.5s forwards;
   }
+
+
+  .logo {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 1.5rem;
+    font-weight: bold;
+    color: var(--primary-color);
+    text-decoration: none;
+  }
+  
+  .logo-icon {
+    font-size: 1.8rem;
+  }
+  
+.logo-text {
+    color: inherit;
+    text-decoration: none;
+  }
+  
+  /* New styles for the link wrapping the logo */
+  .logo-link {
+    display: flex;
+    align-items: center;
+    text-decoration: none;
+    color: inherit;
+  }
+/* Hotels Section */
+.hotels-section {
+    background: #fff;
+    border-radius: 12px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    padding: 2rem;
+    margin-bottom: 3rem;
+  }
+  
+  .hotels-section h2 {
+    color: #2c3e50;
+    margin-bottom: 1.5rem;
+    font-size: 1.8rem;
+    border-bottom: 2px solid #f0f0f0;
+    padding-bottom: 0.5rem;
+  }
+  
+  /* Grid layout for hotel cards */
+  .hotels-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 1.5rem;
+  }
+  
+  /* Individual hotel card */
+  .hotel-card {
+    background: #f8f9fa;
+    border-radius: 8px;
+    padding: 1.5rem;
+    border: 1px solid #e9ecef;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+  }
+  
+  .hotel-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  }
+  
+  /* Hotel header */
+  .hotel-header {
+    display: flex;
+    flex-direction: column;
+    margin-bottom: 1rem;
+  }
+  
+  .hotel-header h3 {
+    margin: 0;
+    color: #2c3e50;
+    font-size: 1.5rem;
+  }
+  
+  .hotel-location {
+    font-size: 0.9rem;
+    color: #6c757d;
+  }
+  
+  /* Hotel details */
+  .hotel-details {
+    color: #2c3e50;
+    font-size: 1rem;
+  }
+  
+  .hotel-details div {
+    margin-bottom: 0.5rem;
+  }
+  
+  .hotel-details strong {
+    color: #2c3e50;
+  }
+  
+  /* Responsive styles */
+  @media (max-width: 768px) {
+    .hotels-grid {
+      grid-template-columns: 1fr;
+    }
+  }
+  
