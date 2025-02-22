@@ -248,20 +248,39 @@ function HomePage() {
                 {errors.travelStyle && <span className="error-message">{errors.travelStyle}</span>}
             </div>
                 </div>
-                <button 
-                    className="generate-btn" 
-                    onClick={handleGenerateItinerary}
-                    disabled={isLoading}
-                >
-                    {isLoading ? (
-                    <span>Generating...</span>
-                    ) : (
-                    <>
-                        <FaSearch style={{ marginRight: '0.5rem' }} />
-                        Generate My Trip
-                    </>
-                    )}
-                </button>
+                {isLoading && (
+  <div className="loading-overlay">
+    <div className="blurred-background"></div>
+    <motion.div 
+      className="flying-plane"
+      initial={{ x: "-50vw", y: "10vh", scale: 0.6, rotate: -10 }}  // Slight tilt for takeoff
+      animate={{ x: "60vw", y: "-40vh", scale: 1.5, rotate: 5 }}  // Tilts forward slightly
+      transition={{ duration: 3, ease: "easeInOut" }}
+    >
+      ✈️
+    </motion.div>
+    <div className="loading-text">Generating Itinerary...</div>
+  </div>
+)}
+
+<button 
+  className="generate-btn" 
+  onClick={handleGenerateItinerary}
+  disabled={isLoading}
+>
+  {isLoading ? (
+    <>
+      <FaSearch style={{ marginRight: "0.5rem" }} />
+      Loading...
+    </>
+  ) : (
+    <>
+      <FaSearch style={{ marginRight: "0.5rem" }} />
+      Generate My Trip
+    </>
+  )}
+</button>
+
             </motion.div>
           </div>
           <motion.div 
