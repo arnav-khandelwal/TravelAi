@@ -185,25 +185,19 @@ function ItineraryPage() {
             <>
               <div className="weather-grid">
                 <div className="weather-item">
-                  <strong>Average Temperature:</strong> {weather.avgTemp}°C
+                  <strong>Average Temperature:</strong> {weather.avgTemp}
                 </div>
                 <div className="weather-item">
                   <strong>Condition:</strong> {weather.condition}
                 </div>
                 <div className="weather-item">
-                  <strong>Sun Exposure:</strong> {weather.sunExposure}
+                  <strong>Rain Chance:</strong> {weather.rainChance}
                 </div>
                 <div className="weather-item">
-                  <strong>Rain Chance:</strong> {weather.rainChance}%
+                  <strong>Wind Speed:</strong> {weather.wind}
                 </div>
                 <div className="weather-item">
-                  <strong>Wind Speed:</strong> {weather.wind} km/h
-                </div>
-                <div className="weather-item">
-                  <strong>Humidity:</strong> {weather.humidity}%
-                </div>
-                <div className="weather-item">
-                  <strong>UV Index:</strong> {weather.uvIndex}
+                  <strong>Humidity:</strong> {weather.humidity}
                 </div>
               </div>
               <div className="packing-tips">
@@ -234,7 +228,7 @@ function ItineraryPage() {
           </div>
           <div className="hotel-details">
             <div>
-              <strong>Price:</strong> ₹{hotel.price.toLocaleString()} /-
+              <strong>Price:</strong> {hotel.currency} {hotel.price.toLocaleString()} /-
             </div>
             <div>
               <strong>Rating:</strong> ⭐ {hotel.rating}

@@ -1,4 +1,4 @@
-import { GoogleGenerativeAI } from '@google/generative-ai';
+import { GoogleGenerativeAI } from "@google/generative-ai";
 
 const genAI = new GoogleGenerativeAI(import.meta.env.VITE_GEMINI_API_KEY);
 
@@ -28,6 +28,39 @@ const fetchCoordinates = async (city) => {
         return null;
     }
 };
+
+// ✅ Fetch weather from OpenWeather API instead of Gemini
+const fetchWeather = async (city) => {
+    const apiKey = import.meta.env.VITE_OPENWEATHER_API_KEY;
+    const coordinates = await fetchCoordinates(city);
+    if (!coordinates) return null;
+
+    const { latitude, longitude } = coordinates;
+
+    try {
+        // Fetch current weather data
+        const weatherUrl = `https://api.openweathermap.org/data/2.5/weather?lat=${latitude}&lon=${longitude}&units=metric&appid=${apiKey}`;
+        const weatherResponse = await fetch(weatherUrl);
+        const weatherData = await weatherResponse.json();
+
+        return {
+            avgTemp: `${Math.round(weatherData.main.temp)}°C`,
+            condition: weatherData.weather[0].description,
+            rainChance: weatherData.rain ? `${weatherData.rain["1h"] || 0}%` : "0%",
+            wind: `${weatherData.wind.speed} km/h`,
+            humidity: `${weatherData.main.humidity}%`,
+            packingTips: [
+                "Comfortable shoes",
+                weatherData.main.temp < 15 ? "Warm clothes" : "Light clothing",
+                weatherData.weather[0].main === "Rain" ? "Umbrella" : "Sunglasses",
+            ].filter(Boolean) // Remove empty values
+        };
+    } catch (error) {
+        console.error("Error fetching weather:", error);
+        return null;
+    }
+};
+
 
 const generateItinerary = async (formData, setIsLoading, navigate) => {
     if (!formData) return;
@@ -70,14 +103,6 @@ const generateItinerary = async (formData, setIsLoading, navigate) => {
       "price": "Estimated price"
     }
   ],
-  "weather": {
-    "avgTemp": "Average Temperature in °C",
-    "condition": "Weather condition (e.g., sunny, cloudy, etc.)",
-    "rainChance": "Percentage chance of rain",
-    "wind": "Wind speed in km/h",
-    "packingTips": "Suggested packing items"
-  },
-  "hotels": [] // Placeholder for hotels fetched from API
 }
 
 ### **Rules**
@@ -104,26 +129,28 @@ const generateItinerary = async (formData, setIsLoading, navigate) => {
             const url = `https://booking-com.p.rapidapi.com/v1/hotels/search-by-coordinates?page_number=0&locale=en-gb&longitude=${longitude}&checkout_date=${checkoutDate}&latitude=${latitude}&room_number=1&include_adjacency=true&filter_by_currency=INR&checkin_date=${checkinDate}&order_by=popularity&children_ages=5%2C0&categories_filter_ids=class%3A%3A5%2Cfree_cancellation%3A%3A1&units=metric&children_number=2&adults_number=2`;
             
             const options = {
-                method: 'GET',
+                method: "GET",
                 headers: {
-                    'x-rapidapi-key': import.meta.env.VITE_RAPID_API_KEY,
-                    'x-rapidapi-host': 'booking-com.p.rapidapi.com'
+                    "x-rapidapi-key": import.meta.env.VITE_RAPID_API_KEY,
+                    "x-rapidapi-host": "booking-com.p.rapidapi.com"
                 }
             };
         
             try {
                 const response = await fetch(url, options);
-                const result = await response.json();  // ✅ Convert response to JSON
-                console.log(result.result);
-                return result.result || []; // ✅ Ensure an array is returned
+                const result = await response.json();
+                return result.result || [];
             } catch (error) {
                 console.error("Error fetching hotels:", error);
                 return [];
             }
         };
-        
 
-        const [itineraryResponse, hotels] = await Promise.all([fetchItinerary(), fetchHotels()]);
+        const [itineraryResponse, hotels, weather] = await Promise.all([
+            fetchItinerary(),
+            fetchHotels(),
+            fetchWeather(formData.destination)
+        ]);
 
         let parsedItinerary;
         try {
@@ -133,9 +160,19 @@ const generateItinerary = async (formData, setIsLoading, navigate) => {
             return;
         }
 
+        parsedItinerary.weather = weather || {
+            avgTemp: "N/A",
+            condition: "N/A",
+            rainChance: "N/A",
+            wind: "N/A",
+            humidity: "N/A",
+            packingTips: []
+        };
+
         parsedItinerary.hotels = hotels.map(hotel => ({
             name: hotel.hotel_name,
             location: `${hotel.city}, ${hotel.country_trans}`,
+            currency: hotel.currency_code,
             price: hotel.price_breakdown.all_inclusive_price || "N/A",
             rating: hotel.review_score || "N/A",
             amenities: hotel.is_free_cancellable ? ["Free Cancellation"] : [],
