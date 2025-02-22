@@ -5,6 +5,7 @@ import { TypeAnimation } from 'react-type-animation';
 import { useNavigate, Link } from 'react-router-dom';
 import { GoogleGenerativeAI } from '@google/generative-ai';
 import DatePicker from 'react-datepicker';
+import { Loader, Placeholder } from "rsuite";
 import Select from 'react-select';
 import GlobeComponent from '../../components/Globe';
 import Features from '../../components/Features';
@@ -12,6 +13,7 @@ import Testimonials from '../../components/Testimonials';
 import JourneyCards from '../../components/JourneyCards';
 import "react-datepicker/dist/react-datepicker.css";
 import AsyncSelect from 'react-select/async';
+import "rsuite/dist/rsuite.min.css";
 import './HomePage.css';
 
 const genAI = new GoogleGenerativeAI(import.meta.env.VITE_GEMINI_API_KEY);
@@ -348,20 +350,39 @@ function HomePage() {
                 {errors.travelStyle && <span className="error-message">{errors.travelStyle}</span>}
             </div>
                 </div>
-                <button 
-                    className="generate-btn" 
-                    onClick={generateItinerary}
-                    disabled={isLoading}
-                >
-                    {isLoading ? (
-                    <span>Generating...</span>
-                    ) : (
-                    <>
-                        <FaSearch style={{ marginRight: '0.5rem' }} />
-                        Generate My Trip
-                    </>
-                    )}
-                </button>
+                {isLoading && (
+  <div className="loading-overlay">
+    <div className="blurred-background"></div>
+    <motion.div 
+      className="flying-plane"
+      initial={{ x: "-50vw", y: "10vh", scale: 0.6, rotate: -10 }}  // Slight tilt for takeoff
+      animate={{ x: "60vw", y: "-40vh", scale: 1.5, rotate: 5 }}  // Tilts forward slightly
+      transition={{ duration: 3, ease: "easeInOut" }}
+    >
+      ✈️
+    </motion.div>
+    <div className="loading-text">Generating Itinerary...</div>
+  </div>
+)}
+
+<button 
+  className="generate-btn" 
+  onClick={generateItinerary}
+  disabled={isLoading}
+>
+  {isLoading ? (
+    <>
+      <FaSearch style={{ marginRight: "0.5rem" }} />
+      Loading...
+    </>
+  ) : (
+    <>
+      <FaSearch style={{ marginRight: "0.5rem" }} />
+      Generate My Trip
+    </>
+  )}
+</button>
+
             </motion.div>
           </div>
           <motion.div 
