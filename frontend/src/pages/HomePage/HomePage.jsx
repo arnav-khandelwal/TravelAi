@@ -330,6 +330,7 @@ function HomePage() {
           <p>&copy; 2024 TravelAI. All rights reserved.</p>
         </div>
       </footer>
+      <chatbot />
     </div>
   );
 }

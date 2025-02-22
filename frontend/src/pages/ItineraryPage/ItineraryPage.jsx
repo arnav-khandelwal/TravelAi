@@ -295,6 +295,7 @@ function ItineraryPage() {
         >
           Share Itinerary
         </button>
+        <chatbot />
       </div>
     </motion.div>
   );
