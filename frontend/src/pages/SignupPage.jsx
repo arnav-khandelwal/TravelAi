@@ -377,7 +377,7 @@ function SignupPage() {
           </form>
 
           <div className="auth-footer">
-            <p>Already have an account? <a href="#">Sign in</a></p>
+            <p>Already have an account? <a href="/auth">Sign in</a></p>
           </div>
         </div>
       </div>

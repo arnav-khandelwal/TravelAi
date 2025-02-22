@@ -667,3 +667,42 @@
   .react-select__option--is-selected {
     background: var(--primary-color) !important;
   }
+  .loading-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+  }
+  
+  .blurred-background {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(255, 255, 255, 0.8);
+    backdrop-filter: blur(8px);
+  }
+  
+  .flying-plane {
+    position: relative;
+    font-size: 4.5rem;
+    z-index: 1001;
+    filter: drop-shadow(0 0 10px rgba(0, 0, 0, 0.2));
+  }
+  
+  .loading-text {
+    margin-top: 2rem;
+    font-size: 1.2rem;
+    font-weight: 500;
+    color: #333;
+    z-index: 1001;
+    text-align: center;
+  }
+  

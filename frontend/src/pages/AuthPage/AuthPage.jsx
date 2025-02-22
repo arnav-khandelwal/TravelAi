@@ -134,7 +134,7 @@ function AuthPage() {
           </form>
 
           <div className="auth-footer">
-            <p>Don't have an account? <a href="#">Sign up for free</a></p>
+            <p>Don't have an account? <a href="/signup">Sign up for free</a></p>
           </div>
         </div>
       </div>

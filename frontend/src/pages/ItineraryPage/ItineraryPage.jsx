@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { motion } from 'framer-motion';
 import { Link } from 'react-router-dom';
 import './ItineraryPage.css';
-import { FaPlane, FaChevronLeft, FaChevronRight } from 'react-icons/fa';
+import { FaPlane, FaChevronLeft, FaChevronRight, FaShoppingCart, FaTimes } from 'react-icons/fa';
 
 function ItineraryPage() {
   const [itineraryData, setItineraryData] = useState(null);
@@ -13,6 +13,8 @@ function ItineraryPage() {
   const [currentTranslate, setCurrentTranslate] = useState(0);
   const [prevTranslate, setPrevTranslate] = useState(0);
   const [animationClass, setAnimationClass] = useState('');
+  const [cartOpen, setCartOpen] = useState(false);
+  const [selectedHotelIndex, setSelectedHotelIndex] = useState(null);
   const slideRef = useRef(null);
 
   const handleNext = () => {
@@ -55,6 +57,18 @@ function ItineraryPage() {
     }
     setCurrentTranslate(0);
     setPrevTranslate(0);
+  };
+
+  const toggleCart = () => {
+    setCartOpen(!cartOpen);
+  };
+
+  const addToCart = (index) => {
+    setSelectedHotelIndex(index);
+  };
+
+  const removeFromCart = () => {
+    setSelectedHotelIndex(null);
   };
 
   useEffect(() => {
@@ -102,16 +116,14 @@ function ItineraryPage() {
       console.error("Error loading itinerary:", error);
     }
   }, []);
-  
 
   if (!itineraryData) {
     return <div className="loading">Loading itinerary...</div>;
   }
 
-  // Ensure data exists before accessing it
   const { flights = [], weather = {}, days = [], hotels = [] } = itineraryData;
+  const selectedHotel = selectedHotelIndex !== null ? hotels[selectedHotelIndex] : null;
 
-  // Format date-time string to readable format
   const formatDateTime = (dateTimeStr) => {
     return new Date(dateTimeStr).toLocaleString('en-US', {
       dateStyle: 'long',
@@ -126,58 +138,56 @@ function ItineraryPage() {
       animate={{ opacity: 1 }}
       transition={{ duration: 0.6 }}
     >
-      {/* Title Section */}
       <header className={`header ${scrolled ? 'scrolled' : ''}`}>
-                <div className="logo">
-                <Link to="/" className="logo-link">
-                <FaPlane className="logo-icon" />
-                <span className="logo-text">TravelAI</span>
-                </Link>
-                </div>
-                <div className="auth-buttons">
-                  <button className="sign-in-btn">Sign In</button>
-                  <button className="sign-up-btn">Sign Up</button>
-                </div>
+        <div className="logo">
+          <Link to="/" className="logo-link">
+            <FaPlane className="logo-icon" />
+            <span className="logo-text">TravelAI</span>
+          </Link>
+        </div>
+        <div className="auth-buttons">
+          <Link to="/auth" className="sign-in-btn">Sign In</Link>
+          <Link to="/signup" className="sign-up-btn">Sign Up</Link>
+        </div>
       </header>
+
       <header className="itinerary-header">
-      <br/><br/><br/>
+        <br/><br/><br/>
         <h1>{itineraryData.title}</h1>
       </header>
 
-        {/* Daily Itinerary Section */}
-        <section className="section daily-section">
+      <section className="section daily-section">
         <h2>Daily Itinerary</h2>
         {days.length > 0 ? (
-            <div className="slideshow" ref={slideRef}>
+          <div className="slideshow" ref={slideRef}>
             <div className={`day-card ${animationClass}`}>
-                <div className="day-header">
+              <div className="day-header">
                 <button className="nav-button" onClick={handlePrevious}>
-                    <FaChevronLeft />
+                  <FaChevronLeft />
                 </button>
                 <h3>Day {days[currentDayIndex].day}</h3>
                 <button className="nav-button" onClick={handleNext}>
-                    <FaChevronRight />
+                  <FaChevronRight />
                 </button>
-                </div>
-                <div className="timeline">
+              </div>
+              <div className="timeline">
                 {days[currentDayIndex].activities.map((activity, index) => (
-                    <div key={index} className="timeline-item">
+                  <div key={index} className="timeline-item">
                     <div className="timeline-time">{activity.time}</div>
                     <div className="timeline-content">
-                        <h4>{activity.activity}</h4>
-                        <p>{activity.details}</p>
+                      <h4>{activity.activity}</h4>
+                      <p>{activity.details}</p>
                     </div>
-                    </div>
+                  </div>
                 ))}
-                </div>
+              </div>
             </div>
-            </div>
+          </div>
         ) : (
-            <p>No itinerary available.</p>
+          <p>No itinerary available.</p>
         )}
-        </section>
+      </section>
 
-        {/* Weather Section */}
       <section className="section weather-section">
         <h2>Weather Information</h2>
         <div className="weather-card">
@@ -211,44 +221,54 @@ function ItineraryPage() {
         </div>
       </section>
 
-        {/* Hotels Section */}
-<section className="section hotels-section">
-    <h2>Recommended Hotels</h2>
-    <p style={{ fontSize: "0.8rem", color: "gray", marginTop: "-10px" }}>
-    <i>*Prices are for the whole stay and not just one night.</i>
-    </p>
-  <div className="hotels-grid">
-    {hotels.length > 0 ? (
-      hotels.slice(0, 6).map((hotel, index) => ( // Display only first 6 hotels
-        <div key={index} className="hotel-card">
-          <div className="hotel-header">
-            <img src={hotel.image} alt={hotel.name} className="hotel-image" />
-            <h3>{hotel.name}</h3>
-            <span className="hotel-location">{hotel.location}</span>
-          </div>
-          <div className="hotel-details">
-            <div>
-              <strong>Price:</strong> {hotel.currency} {hotel.price.toLocaleString()} /-
-            </div>
-            <div>
-              <strong>Rating:</strong> ⭐ {hotel.rating}
-            </div>
-            <div>
-              <strong>Amenities:</strong> {hotel.amenities.join(", ")}
-            </div>
-          </div>
+      <section className="section hotels-section">
+        <h2>Recommended Hotels</h2>
+        <p style={{ fontSize: "0.8rem", color: "gray", marginTop: "-10px" }}>
+          <i>*Prices are for the whole stay and not just one night.</i>
+        </p>
+        <div className="hotels-grid">
+          {hotels.length > 0 ? (
+            hotels.slice(0, 6).map((hotel, index) => (
+              <div key={index} className="hotel-card">
+                <div className="hotel-header">
+                  <img src={hotel.image} alt={hotel.name} className="hotel-image" />
+                  <h3>{hotel.name}</h3>
+                  <span className="hotel-location">{hotel.location}</span>
+                </div>
+                <div className="hotel-details">
+                  <div>
+                    <strong>Price:</strong> {hotel.currency} {hotel.price.toLocaleString()} /-
+                  </div>
+                  <div>
+                    <strong>Rating:</strong> ⭐ {hotel.rating}
+                  </div>
+                  <div>
+                    <strong>Amenities:</strong> {hotel.amenities.join(", ")}
+                  </div>
+                  {selectedHotelIndex === index ? (
+                    <button
+                      className="remove-from-cart"
+                      onClick={removeFromCart}
+                    >
+                      Remove from Cart
+                    </button>
+                  ) : (
+                    <button
+                      className="add-to-cart"
+                      onClick={() => addToCart(index)}
+                    >
+                      Add to Cart
+                    </button>
+                  )}
+                </div>
+              </div>
+            ))
+          ) : (
+            <p>No hotel details available.</p>
+          )}
         </div>
-      ))
-    ) : (
-      <p>No hotel details available.</p>
-    )}
-  </div>
-</section>
+      </section>
 
-
-
-
-      {/* Flight Details Section */}
       <section className="section flights-section">
         <h2>Flight Information</h2>
         <div className="flights-grid">
@@ -279,7 +299,6 @@ function ItineraryPage() {
         </div>
       </section>
 
-      {/* Action Buttons */}
       <div className="action-buttons">
         <button onClick={() => window.print()} className="print-btn">
           Print Itinerary
@@ -295,7 +314,39 @@ function ItineraryPage() {
         >
           Share Itinerary
         </button>
-        <chatbot />
+      </div>
+
+      <div className="cart-icon-container" onClick={toggleCart}>
+        <FaShoppingCart size={24} />
+        {selectedHotel && <span className="cart-count">1</span>}
+      </div>
+
+      <div className={`cart-overlay ${cartOpen ? 'open' : ''}`} onClick={toggleCart}></div>
+
+      <div className={`cart-sidebar ${cartOpen ? 'open' : ''}`}>
+        <div className="cart-header">
+          <h2>Your Cart</h2>
+          <button className="cart-close" onClick={toggleCart}>
+            <FaTimes />
+          </button>
+        </div>
+        {!selectedHotel ? (
+          <p>Your cart is empty</p>
+        ) : (
+          <div className="cart-item">
+            <img src={selectedHotel.image} alt={selectedHotel.name} className="cart-item-image" />
+            <div className="cart-item-details">
+              <h4>{selectedHotel.name}</h4>
+              <p>{selectedHotel.location}</p>
+              <div className="cart-item-price">
+                {selectedHotel.currency} {selectedHotel.price.toLocaleString()} /-
+              </div>
+              <button className="remove-from-cart" onClick={removeFromCart}>
+                Remove from Cart
+              </button>
+            </div>
+          </div>
+        )}
       </div>
     </motion.div>
   );

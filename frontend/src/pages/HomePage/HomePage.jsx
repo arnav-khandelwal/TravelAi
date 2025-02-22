@@ -29,8 +29,6 @@ const CustomDateInput = React.forwardRef(({ value, onClick, placeholder }, ref) 
   </div>
 ));
 
-
-
 const useFormValidation = () => {
   const [errors, setErrors] = useState({});
 
@@ -69,7 +67,6 @@ const useFormValidation = () => {
   return { errors, validateForm };
 };
 
-
 function HomePage() {
   const [scrolled, setScrolled] = useState(false);
   const navigate = useNavigate();
@@ -83,6 +80,28 @@ function HomePage() {
   });
   const { errors, validateForm } = useFormValidation();
   const [isLoading, setIsLoading] = useState(false);
+
+  const planeVariants = {
+    initial: {
+      x: "-50vw",
+      y: "30vh",
+      scale: 0.6,
+      rotate: -10
+    },
+    animate: {
+      x: ["-50vw", "0vw", "30vw", "60vw"],
+      y: ["30vh", "-10vh", "20vh", "-40vh"],
+      scale: [0.6, 1, 0.8, 1.5],
+      rotate: [-10, 15, -20, 5],
+      transition: {
+        duration: 20,
+        times: [0, 0.3, 0.6, 1],
+        ease: "easeInOut",
+        repeat: Infinity,
+        repeatType: "reverse"
+      }
+    }
+  };
 
   const handleInputChange = (field, value) => {
     setFormData(prev => ({
@@ -115,17 +134,16 @@ function HomePage() {
 
   const handleGenerateItinerary = () => {
     generateItinerary(formData, setIsLoading, navigate);
-};
-
+  };
 
   return (
     <div className="app">
       <header className={`header ${scrolled ? 'scrolled' : ''}`}>
         <div className="logo">
-            <Link to="/" className="logo-link">
+          <Link to="/" className="logo-link">
             <FaPlane className="logo-icon" />
             <span className="logo-text">TravelAI</span>
-            </Link>
+          </Link>
         </div>
         <nav>
           <a href="#features">Features</a>
@@ -134,8 +152,8 @@ function HomePage() {
           <a href="#pricing">Pricing</a>
         </nav>
         <div className="auth-buttons">
-        <Link to="/auth" className="sign-in-btn">Sign In</Link>
-        <Link to="/signup" className="sign-up-btn">Sign Up</Link>
+          <Link to="/auth" className="sign-in-btn">Sign In</Link>
+          <Link to="/signup" className="sign-up-btn">Sign Up</Link>
         </div>
       </header>
 
@@ -179,110 +197,117 @@ function HomePage() {
               transition={{ duration: 0.6, delay: 0.6 }}
             >
               <div className="search-grid">
-              <div className="input-group">
-                <input
+                <div className="input-group">
+                  <input
                     type="text"
                     placeholder="Starting Location"
                     className={`search-input ${errors.startLocation ? 'error' : ''}`}
                     value={formData.startLocation}
                     onChange={(e) => handleInputChange('startLocation', e.target.value)}
-                />
-                {errors.startLocation && <span className="error-message">{errors.startLocation}</span>}
-            </div>
+                  />
+                  {errors.startLocation && <span className="error-message">{errors.startLocation}</span>}
+                </div>
 
-            <div className="input-group">
-                <input
+                <div className="input-group">
+                  <input
                     type="text"
                     placeholder="Destination"
                     className={`search-input ${errors.destination ? 'error' : ''}`}
                     value={formData.destination}
                     onChange={(e) => handleInputChange('destination', e.target.value)}
-                />
-                {errors.destination && <span className="error-message">{errors.destination}</span>}
-            </div>
-
-
-            <div className="input-group">
-                <DatePicker
-                selected={formData.startDate}
-                onChange={(date) => handleInputChange('startDate', date)}
-                placeholderText="Start Date"
-                className={`search-input ${errors.startDate ? 'error' : ''}`}
-                minDate={new Date()}
-                customInput={<CustomDateInput placeholder="Start Date" />}
-                />
-                {errors.startDate && <span className="error-message">{errors.startDate}</span>}
-            </div>
-
-            <div className="input-group">
-                <DatePicker
-                selected={formData.endDate}
-                onChange={(date) => handleInputChange('endDate', date)}
-                placeholderText="End Date"
-                className={`search-input ${errors.endDate ? 'error' : ''}`}
-                minDate={formData.startDate || new Date()}
-                customInput={<CustomDateInput placeholder="End Date" />}
-                />
-                {errors.endDate && <span className="error-message">{errors.endDate}</span>}
-            </div>
-
-            <div className="input-group">
-                <Select
-                options={budgetOptions}
-                placeholder="Budget Range"
-                className={`react-select-container ${errors.budget ? 'error' : ''}`}
-                value={formData.budget}
-                onChange={(option) => handleInputChange('budget', option)}
-                />
-                {errors.budget && <span className="error-message">{errors.budget}</span>}
-            </div>
-
-            <div className="input-group">
-                <Select
-                options={travelStyleOptions}
-                placeholder="Travel Style"
-                className={`react-select-container ${errors.travelStyle ? 'error' : ''}`}
-                value={formData.travelStyle}
-                onChange={(option) => handleInputChange('travelStyle', option)}
-                />
-                {errors.travelStyle && <span className="error-message">{errors.travelStyle}</span>}
-            </div>
+                  />
+                  {errors.destination && <span className="error-message">{errors.destination}</span>}
                 </div>
-                {isLoading && (
-  <div className="loading-overlay">
-    <div className="blurred-background"></div>
-    <motion.div 
-      className="flying-plane"
-      initial={{ x: "-50vw", y: "10vh", scale: 0.6, rotate: -10 }}  // Slight tilt for takeoff
-      animate={{ x: "60vw", y: "-40vh", scale: 1.5, rotate: 5 }}  // Tilts forward slightly
-      transition={{ duration: 3, ease: "easeInOut" }}
-    >
-      ✈️
-    </motion.div>
-    <div className="loading-text">Generating Itinerary...</div>
-  </div>
-)}
 
-<button 
-  className="generate-btn" 
-  onClick={handleGenerateItinerary}
-  disabled={isLoading}
->
-  {isLoading ? (
-    <>
-      <FaSearch style={{ marginRight: "0.5rem" }} />
-      Loading...
-    </>
-  ) : (
-    <>
-      <FaSearch style={{ marginRight: "0.5rem" }} />
-      Generate My Trip
-    </>
-  )}
-</button>
+                <div className="input-group">
+                  <DatePicker
+                    selected={formData.startDate}
+                    onChange={(date) => handleInputChange('startDate', date)}
+                    placeholderText="Start Date"
+                    className={`search-input ${errors.startDate ? 'error' : ''}`}
+                    minDate={new Date()}
+                    customInput={<CustomDateInput placeholder="Start Date" />}
+                  />
+                  {errors.startDate && <span className="error-message">{errors.startDate}</span>}
+                </div>
 
+                <div className="input-group">
+                  <DatePicker
+                    selected={formData.endDate}
+                    onChange={(date) => handleInputChange('endDate', date)}
+                    placeholderText="End Date"
+                    className={`search-input ${errors.endDate ? 'error' : ''}`}
+                    minDate={formData.startDate || new Date()}
+                    customInput={<CustomDateInput placeholder="End Date" />}
+                  />
+                  {errors.endDate && <span className="error-message">{errors.endDate}</span>}
+                </div>
+
+                <div className="input-group">
+                  <Select
+                    options={budgetOptions}
+                    placeholder="Budget Range"
+                    className={`react-select-container ${errors.budget ? 'error' : ''}`}
+                    value={formData.budget}
+                    onChange={(option) => handleInputChange('budget', option)}
+                  />
+                  {errors.budget && <span className="error-message">{errors.budget}</span>}
+                </div>
+
+                <div className="input-group">
+                  <Select
+                    options={travelStyleOptions}
+                    placeholder="Travel Style"
+                    className={`react-select-container ${errors.travelStyle ? 'error' : ''}`}
+                    value={formData.travelStyle}
+                    onChange={(option) => handleInputChange('travelStyle', option)}
+                  />
+                  {errors.travelStyle && <span className="error-message">{errors.travelStyle}</span>}
+                </div>
+              </div>
+
+              {isLoading && (
+                <div className="loading-overlay">
+                  <div className="blurred-background"></div>
+                  <motion.div 
+                    className="flying-plane"
+                    variants={planeVariants}
+                    initial="initial"
+                    animate="animate"
+                  >
+                    ✈️
+                  </motion.div>
+                  <motion.div 
+                    className="loading-text"
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.5, delay: 0.2 }}
+                  >
+                    Generating Itinerary...
+                  </motion.div>
+                </div>
+              )}
+
+              <button 
+                className="generate-btn" 
+                onClick={handleGenerateItinerary}
+                disabled={isLoading}
+              >
+                {isLoading ? (
+                  <>
+                    <FaSearch style={{ marginRight: "0.5rem" }} />
+                    Loading...
+                  </>
+                ) : (
+                  <>
+                    <FaSearch style={{ marginRight: "0.5rem" }} />
+                    Generate My Trip
+                  </>
+                )}
+              </button>
             </motion.div>
           </div>
+          
           <motion.div 
             className="globe-container"
             initial={{ opacity: 0, scale: 0.8 }}
