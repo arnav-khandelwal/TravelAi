@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { motion } from 'framer-motion';
 import { Link } from 'react-router-dom';
 import './ItineraryPage.css';
-import { FaPlane, FaChevronLeft, FaChevronRight, FaShoppingCart, FaTimes } from 'react-icons/fa';
+import { FaPlane, FaChevronLeft, FaChevronRight, FaShoppingCart, FaTimes, FaEdit  } from 'react-icons/fa';
 
 function ItineraryPage() {
   const [itineraryData, setItineraryData] = useState(null);
@@ -16,6 +16,8 @@ function ItineraryPage() {
   const [cartOpen, setCartOpen] = useState(false);
   const [selectedHotelIndex, setSelectedHotelIndex] = useState(null);
   const slideRef = useRef(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [aiPrompt, setAiPrompt] = useState("");
 
   const handleNext = () => {
     setAnimationClass('slide-left');
@@ -157,7 +159,13 @@ function ItineraryPage() {
       </header>
 
       <section className="section daily-section">
+      <div className="section-header">
         <h2>Daily Itinerary</h2>
+        <button className="edit-button" onClick={() => setIsModalOpen(true)}>
+            <FaEdit /> Edit Itinerary
+        </button>
+        </div>
+    <br/>
         {days.length > 0 ? (
           <div className="slideshow" ref={slideRef}>
             <div className={`day-card ${animationClass}`}>
@@ -186,6 +194,25 @@ function ItineraryPage() {
         ) : (
           <p>No itinerary available.</p>
         )}
+
+        {/* AI Input Modal */}
+      {isModalOpen && (
+        <div className="modal-overlay">
+          <div className="modal">
+            <h3>Refine Itinerary with AI</h3>
+            <textarea
+              placeholder="Enter your request (e.g., Make the itinerary more relaxed)"
+              value={aiPrompt}
+              onChange={(e) => setAiPrompt(e.target.value)}
+            />
+            <div className="modal-buttons">
+              <button >Submit</button>
+              <button onClick={() => setIsModalOpen(false)}>Cancel</button>
+            </div>
+          </div>
+        </div>
+      )}
+
       </section>
 
       <section className="section weather-section">
@@ -270,34 +297,66 @@ function ItineraryPage() {
       </section>
 
       <section className="section flights-section">
-        <h2>Flight Information</h2>
-        <div className="flights-grid">
-          {flights.length > 0 ? (
-            flights.map((flight, index) => (
-              <div key={index} className="flight-card">
-                <div className="flight-header">
-                  <h3>{flight.airline}</h3>
-                  <span className="flight-number">Flight {flight.flightNumber}</span>
-                </div>
-                <div className="flight-times">
-                  <div>
-                    <strong>Departure:</strong> {formatDateTime(flight.departure)}
-                  </div>
-                  <div>
-                    <strong>Arrival:</strong> {formatDateTime(flight.arrival)}
-                  </div>
-                </div>
-                <div className="flight-price">
-                  <strong>Price:</strong> {flight.price.toLocaleString()}
-                </div>
-                <div className="flight-details">{flight.details}</div>
+  <h2>Flight Information</h2>
+
+  {/* Flights to the Destination */}
+  <div className="flight-category">
+    <h3>Departure</h3>
+    <div className="flights-grid">
+      {flights.toDestination.length > 0 ? (
+        flights.toDestination.map((flight, index) => (
+          <div key={index} className="flight-card">
+            <div className="flight-header">
+              <h3>{flight.airline}</h3>
+            </div>
+            <div className="flight-times">
+              <div>
+                <strong>Departure:</strong> {flight.departure} at {formatDateTime(flight.depTime)}
               </div>
-            ))
-          ) : (
-            <p>No flight details available.</p>
-          )}
-        </div>
-      </section>
+              <div>
+                <strong>Arrival:</strong> {flight.arrival} at {formatDateTime(flight.arrTime)}
+              </div>
+            </div>
+            <div className="flight-price">
+              <strong>Price:</strong> {flight.price.toLocaleString()}
+            </div>
+          </div>
+        ))
+      ) : (
+        <p>No flight details available.</p>
+      )}
+    </div>
+  </div>
+
+  {/* Flights Returning from the Destination */}
+  <div className="flight-category">
+    <h3>Return</h3>
+    <div className="flights-grid">
+      {flights.fromDestination.length > 0 ? (
+        flights.fromDestination.map((flight, index) => (
+          <div key={index} className="flight-card">
+            <div className="flight-header">
+              <h3>{flight.airline}</h3>
+            </div>
+            <div className="flight-times">
+              <div>
+                <strong>Departure:</strong> {flight.departure} at {formatDateTime(flight.depTime)}
+              </div>
+              <div>
+                <strong>Arrival:</strong> {flight.arrival} at {formatDateTime(flight.arrTime)}
+              </div>
+            </div>
+            <div className="flight-price">
+              <strong>Price:</strong> {flight.price.toLocaleString()}
+            </div>
+          </div>
+        ))
+      ) : (
+        <p>No return flight details available.</p>
+      )}
+    </div>
+  </div>
+</section>
 
       <div className="action-buttons">
         <button onClick={() => window.print()} className="print-btn">

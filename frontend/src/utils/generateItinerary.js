@@ -29,6 +29,75 @@ const fetchCoordinates = async (city) => {
     }
 };
 
+const fetchAirportSkyID = async (city) => {
+    const apiKey = import.meta.env.VITE_RAPID_API_KEY;
+    const url = `https://sky-scanner3.p.rapidapi.com/flights/auto-complete?query=${city}`;
+
+    const options = {
+        method: 'GET',
+        headers: {
+            'x-rapidapi-key': apiKey,
+            'x-rapidapi-host': 'sky-scanner3.p.rapidapi.com'
+        }
+    };
+
+    try {
+        const response = await fetch(url, options);
+        const result = await response.json();
+        if (result?.data?.length > 0) {
+            return result.data[0].presentation.skyId;
+        }
+        return null;
+    } catch (error) {
+        console.error("Error fetching airport SkyID:", error);
+        return null;
+    }
+};
+
+const fetchFlights = async (departureCity, destinationCity, departureDate) => {
+    const apiKey = import.meta.env.VITE_RAPID_API_KEY;
+
+    const fromSkyID = await fetchAirportSkyID(departureCity);
+    const toSkyID = await fetchAirportSkyID(destinationCity);
+
+    if (!fromSkyID || !toSkyID) {
+        console.error("Could not fetch SkyIDs for flight search.");
+        return [];
+    }
+
+    const url = `https://sky-scanner3.p.rapidapi.com/flights/search-one-way?fromEntityId=${fromSkyID}&toEntityId=${toSkyID}&departDate=${departureDate}&stops=direct&cabinClass=economy`;
+
+    const options = {
+        method: 'GET',
+        headers: {
+            'x-rapidapi-key': apiKey,
+            'x-rapidapi-host': 'sky-scanner3.p.rapidapi.com'
+        }
+    };
+
+    try {
+        const response = await fetch(url, options);
+        const result = await response.json();
+        console.log(result);
+        
+        if (result?.data?.itineraries?.length > 0) {
+            return result.data.itineraries.slice(0, 3).map(flight => ({
+                airline: flight.legs[0].carriers.marketing[0].name,
+                departure: flight.legs[0].origin.id,
+                arrival: flight.legs[0].destination.id,
+                price: flight.price.formatted,
+                depTime: flight.legs[0].departure,
+                arrTime: flight.legs[0].arrival,
+            }));
+        }
+        return [];
+    } catch (error) {
+        console.error("Error fetching flights:", error);
+        return [];
+    }
+};
+
+
 // ✅ Fetch weather from OpenWeather API instead of Gemini
 const fetchWeather = async (city) => {
     const apiKey = import.meta.env.VITE_OPENWEATHER_API_KEY;
@@ -65,8 +134,8 @@ const fetchWeather = async (city) => {
 const generateItinerary = async (formData, setIsLoading, navigate) => {
     if (!formData) return;
 
-    const checkinDate = formatDate(new Date("2025-02-24"));
-    const checkoutDate = formatDate(new Date("2025-02-27"));
+    const checkinDate = formatDate(formData.startDate);
+    const checkoutDate = formatDate(formData.endDate);
 
     setIsLoading(true);
     try {
@@ -110,14 +179,6 @@ const generateItinerary = async (formData, setIsLoading, navigate) => {
                                 ]
                             }
                             `).join(",")}
-                        ],
-                        "flights": [
-                            {
-                            "airline": "Airline Name",
-                            "departure": "Departure Time in ISO format",
-                            "arrival": "Arrival Time in ISO format",
-                            "price": "Estimated price"
-                            }
                         ]
                         }
 
@@ -162,7 +223,9 @@ const generateItinerary = async (formData, setIsLoading, navigate) => {
                 return [];
             }
         };
-
+        const toDestination  = await fetchFlights(formData.startLocation, formData.destination, checkinDate);
+        const fromDestination   = await fetchFlights(formData.startLocation, formData.destination, checkoutDate);
+        const flights = {toDestination: toDestination, fromDestination: fromDestination};
         const [itineraryResponse, hotels, weather] = await Promise.all([
             fetchItinerary(),
             fetchHotels(),
@@ -195,6 +258,8 @@ const generateItinerary = async (formData, setIsLoading, navigate) => {
             amenities: hotel.is_free_cancellable ? ["Free Cancellation"] : [],
             image: hotel.main_photo_url || "https://picsum.photos/200",
         }));
+
+        parsedItinerary.flights = flights;
 
         localStorage.setItem("generatedItinerary", JSON.stringify(parsedItinerary));
 
