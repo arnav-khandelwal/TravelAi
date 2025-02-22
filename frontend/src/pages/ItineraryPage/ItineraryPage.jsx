@@ -109,7 +109,7 @@ function ItineraryPage() {
   }
 
   // Ensure data exists before accessing it
-  const { flights = [], weather = {}, days = [] } = itineraryData;
+  const { flights = [], weather = {}, days = [], hotels = [] } = itineraryData;
 
   // Format date-time string to readable format
   const formatDateTime = (dateTimeStr) => {
@@ -218,56 +218,39 @@ function ItineraryPage() {
       </section>
 
         {/* Hotels Section */}
-        <section className="section hotels-section">
-          <h2>Recommended Hotels</h2>
-          <div className="hotels-grid">
-              {[
-              {
-                  name: "The Grand Palace Hotel",
-                  location: "New York, USA",
-                  price: 15000,
-                  rating: 4.5,
-                  amenities: ["Free WiFi", "Breakfast Included", "Swimming Pool"],
-                  image: "https://picsum.photos/200"
-              },
-              {
-                  name: "Seaside Resort & Spa",
-                  location: "Los Angeles, USA",
-                  price: 18000,
-                  rating: 4.8,
-                  amenities: ["Ocean View", "Spa Services", "Airport Shuttle"],
-                  image: "https://picsum.photos/200"
-              },
-              {
-                  name: "Mountain Escape Lodge",
-                  location: "San Francisco, USA",
-                  price: 13000,
-                  rating: 4.3,
-                  amenities: ["Hiking Trails", "Free Parking", "Pet Friendly"],
-                  image: "https://picsum.photos/200"
-              },
-              ].map((hotel, index) => (
-              <div key={index} className="hotel-card">
-                  <div className="hotel-header">
-                  <img src={hotel.image} alt={hotel.name} className="hotel-image" />
-                  <h3>{hotel.name}</h3>
-                  <span className="hotel-location">{hotel.location}</span>
-                  </div>
-                  <div className="hotel-details">
-                  <div>
-                      <strong>Price:</strong> ₹{hotel.price.toLocaleString()} / night
-                  </div>
-                  <div>
-                      <strong>Rating:</strong> ⭐ {hotel.rating}
-                  </div>
-                  <div>
-                      <strong>Amenities:</strong> {hotel.amenities.join(", ")}
-                  </div>
-                  </div>
-              </div>
-              ))}
+<section className="section hotels-section">
+    <h2>Recommended Hotels</h2>
+    <p style={{ fontSize: "0.8rem", color: "gray", marginTop: "-10px" }}>
+    <i>*Prices are for the whole stay and not just one night.</i>
+    </p>
+  <div className="hotels-grid">
+    {hotels.length > 0 ? (
+      hotels.slice(0, 6).map((hotel, index) => ( // Display only first 6 hotels
+        <div key={index} className="hotel-card">
+          <div className="hotel-header">
+            <img src={hotel.image} alt={hotel.name} className="hotel-image" />
+            <h3>{hotel.name}</h3>
+            <span className="hotel-location">{hotel.location}</span>
           </div>
-        </section>
+          <div className="hotel-details">
+            <div>
+              <strong>Price:</strong> ₹{hotel.price.toLocaleString()} /-
+            </div>
+            <div>
+              <strong>Rating:</strong> ⭐ {hotel.rating}
+            </div>
+            <div>
+              <strong>Amenities:</strong> {hotel.amenities.join(", ")}
+            </div>
+          </div>
+        </div>
+      ))
+    ) : (
+      <p>No hotel details available.</p>
+    )}
+  </div>
+</section>
+
 
 
 

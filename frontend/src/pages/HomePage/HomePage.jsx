@@ -3,7 +3,6 @@ import { motion } from 'framer-motion';
 import { FaPlane, FaSearch, FaCalendarAlt } from 'react-icons/fa';
 import { TypeAnimation } from 'react-type-animation';
 import { useNavigate, Link } from 'react-router-dom';
-import { GoogleGenerativeAI } from '@google/generative-ai';
 import DatePicker from 'react-datepicker';
 import { Loader, Placeholder } from "rsuite";
 import Select from 'react-select';
@@ -15,8 +14,7 @@ import "react-datepicker/dist/react-datepicker.css";
 import AsyncSelect from 'react-select/async';
 import "rsuite/dist/rsuite.min.css";
 import './HomePage.css';
-
-const genAI = new GoogleGenerativeAI(import.meta.env.VITE_GEMINI_API_KEY);
+import generateItinerary from "../../utils/generateItinerary";
 
 const CustomDateInput = React.forwardRef(({ value, onClick, placeholder }, ref) => (
   <div className="custom-date-input" onClick={onClick} ref={ref}>
@@ -30,6 +28,8 @@ const CustomDateInput = React.forwardRef(({ value, onClick, placeholder }, ref) 
     <FaCalendarAlt className="calendar-icon" />
   </div>
 ));
+
+
 
 const useFormValidation = () => {
   const [errors, setErrors] = useState({});
@@ -90,113 +90,6 @@ function HomePage() {
       [field]: value
     }));
   };
-
-  const generateItinerary = async () => {
-    if (!validateForm(formData)) {
-        return;
-    }
-
-    setIsLoading(true);
-
-    try {
-        const prompt = `Plan a detailed travel itinerary for the following details. Ensure the response strictly follows the JSON structure below, but **keep it concise** to fit within 4000 characters:
-
-- Destination: ${formData.destination}
-- Departure city: ${formData.startLocation}
-- Travel dates: ${formData.startDate.toLocaleDateString()} to ${formData.endDate.toLocaleDateString()}
-- Budget: ${formData.budget.label}
-- Travel Style: ${formData.travelStyle.label}
-
-### **Required JSON Structure**
-{
-  "title": "Trip to ${formData.destination}",
-  "type": "Type of trip (solo, family, business, etc.)",
-  "purpose": "Purpose of the visit",
-  "days": [
-    {
-      "day": 1,
-      "activities": [
-        {
-          "time": "Time in HH:MM AM/PM format",
-          "activity": "Short activity name",
-          "details": "Brief description (Max: 20 words)"
-        }
-      ]
-    }
-  ],
-  "flights": [
-    {
-      "airline": "Airline Name",
-      "departure": "Departure Time in ISO format",
-      "arrival": "Arrival Time in ISO format",
-      "price": "Estimated price"
-    }
-  ],
-  "weather": {
-    "avgTemp": "Average Temperature in °C",
-    "condition": "Weather condition (e.g., sunny, cloudy, etc.)",
-    "rainChance": "Percentage chance of rain",
-    "wind": "Wind speed in km/h",
-    "packingTips": "Suggested packing items"
-  }
-}
-
-### **Rules**
-1. Keep the JSON response **under 4000 characters**.
-2. Limit activities to **max 3 per day**.
-3. Ensure JSON is properly formatted and valid.
-4. If data is unavailable, return an empty array [] or null.
-`;
-
-        const model = genAI.getGenerativeModel({ model: "gemini-pro" });
-        const result = await model.generateContent(prompt);
-        const response = await result.response;
-        let text = response.text();
-
-        // Remove Markdown code blocks if present
-        let cleanedText = text.replace(/```json|```/g, "").trim();
-
-        // Ensure response is not too long
-        if (cleanedText.length > 4000) {
-            console.warn("Response too long, truncating...");
-            cleanedText = cleanedText.substring(0, 4000).replace(/,\s*$/, "") + "}";
-        }
-
-        // Safe JSON parsing function
-        const safeParseJSON = (jsonString) => {
-            try {
-                return JSON.parse(jsonString);
-            } catch (error) {
-                console.error("Invalid JSON response:", error);
-                return null;
-            }
-        };
-
-        let parsedData = safeParseJSON(cleanedText);
-
-        // Validate response structure before proceeding
-        if (!parsedData || !parsedData["days"] || !parsedData["flights"] || !parsedData["weather"]) {
-            console.error("Invalid itinerary structure:", cleanedText);
-            return;
-        }
-
-        const itineraryData = {
-            ...parsedData,
-            timestamp: new Date(),
-            searchParams: formData,
-        };
-
-        localStorage.setItem("generatedItinerary", JSON.stringify(itineraryData));
-
-        navigate("/itinerary");
-
-    } catch (error) {
-        console.error("Error generating itinerary:", error);
-    } finally {
-        setIsLoading(false);
-    }
-};
-
   
   useEffect(() => {
     const handleScroll = () => {
@@ -219,6 +112,11 @@ function HomePage() {
     { value: 'cultural', label: 'Cultural' },
     { value: 'foodie', label: 'Foodie' }
   ];
+
+  const handleGenerateItinerary = () => {
+    generateItinerary(formData, setIsLoading, navigate);
+};
+
 
   return (
     <div className="app">
@@ -350,6 +248,7 @@ function HomePage() {
                 {errors.travelStyle && <span className="error-message">{errors.travelStyle}</span>}
             </div>
                 </div>
+<<<<<<< HEAD
                 {isLoading && (
   <div className="loading-overlay">
     <div className="blurred-background"></div>
@@ -383,6 +282,22 @@ function HomePage() {
   )}
 </button>
 
+=======
+                <button 
+                    className="generate-btn" 
+                    onClick={handleGenerateItinerary}
+                    disabled={isLoading}
+                >
+                    {isLoading ? (
+                    <span>Generating...</span>
+                    ) : (
+                    <>
+                        <FaSearch style={{ marginRight: '0.5rem' }} />
+                        Generate My Trip
+                    </>
+                    )}
+                </button>
+>>>>>>> 28bc7ca861cd4952f829df02e09b27e79333883b
             </motion.div>
           </div>
           <motion.div 
