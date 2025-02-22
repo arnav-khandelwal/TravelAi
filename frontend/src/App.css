@@ -137,7 +137,7 @@ nav a:hover::after {
   padding: 7rem 4rem 4rem;
   background: linear-gradient(135deg, #f0f7ff 0%, #ffffff 100%);
   position: relative;
-  gap: 4rem;
+  gap: 0rem;
 }
 
 .hero-content {
@@ -146,7 +146,7 @@ nav a:hover::after {
 }
 
 .hero h1 {
-  font-size: 3.5rem;
+  font-size: 3rem;
   line-height: 1.2;
   margin-bottom: 1.5rem;
   background: linear-gradient(to right, var(--gradient-start), var(--gradient-end));
