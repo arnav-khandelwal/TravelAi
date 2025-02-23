@@ -3,6 +3,8 @@ import { motion } from 'framer-motion';
 import { Link } from 'react-router-dom';
 import './ItineraryPage.css';
 import { FaPlane, FaChevronLeft, FaChevronRight, FaShoppingCart, FaTimes, FaEdit  } from 'react-icons/fa';
+import { GoogleGenerativeAI } from "@google/generative-ai";
+const genAI = new GoogleGenerativeAI(import.meta.env.VITE_GEMINI_API_KEY);
 
 function ItineraryPage() {
   const [itineraryData, setItineraryData] = useState(null);
@@ -17,7 +19,54 @@ function ItineraryPage() {
   const [selectedHotelIndex, setSelectedHotelIndex] = useState(null);
   const slideRef = useRef(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [aiPrompt, setAiPrompt] = useState("");
+  const [userPrompt, setUserPrompt] = useState("");
+  const [loading, setLoading] = useState(false);
+
+
+  const fetchItinerary = async () => {
+    if (!userPrompt) return;
+
+    setLoading(true);
+    const prompt = `You are an intelligent assistant modifying an existing travel itinerary **strictly according to user instructions**. 
+
+    ### **Task**
+    Modify the itinerary **only where requested** and **keep all other details unchanged**.
+
+    ### **User Request**
+    "${userPrompt}"
+
+    ### **Current Itinerary**
+    ${JSON.stringify({
+        title: itineraryData.title,
+        type: itineraryData.type,
+        purpose: itineraryData.purpose,
+        days: itineraryData.days
+        })}
+
+    ### **Instructions**
+    1. **Only update the specific changes requested by the user**. If the request is unclear, make minimal logical changes.
+    2. **Do not alter days, times, or activities unless specifically mentioned**.
+    3. **Return valid JSON with the same structure**, preserving existing information.
+    4. **Ensure the response is under 4000 characters** and properly formatted.
+
+    **Return only the modified JSON output just like the current itinerary. No extra text.**`;
+
+
+    try {
+        const model = genAI.getGenerativeModel({ model: "gemini-pro" });
+        const result = await model.generateContent(prompt);
+        const response = await result.response;
+        const newItinerary =  response.text().replace(/```json|```/g, "").trim();
+
+      setDays(newItinerary.days);
+      setIsModalOpen(false);
+    } catch (error) {
+      console.error("Error fetching new itinerary:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
 
   const handleNext = () => {
     setAnimationClass('slide-left');
@@ -196,19 +245,22 @@ function ItineraryPage() {
         )}
 
         {/* AI Input Modal */}
-      {isModalOpen && (
-        <div className="modal-overlay">
-          <div className="modal">
-            <h3>Refine Itinerary with AI</h3>
+       {/* Modal for Editing Itinerary */}
+       {isModalOpen && (
+        <div className="modal">
+          <div className="modal-content">
+            <h3>Edit Your Itinerary</h3>
             <textarea
-              placeholder="Enter your request (e.g., Make the itinerary more relaxed)"
-              value={aiPrompt}
-              onChange={(e) => setAiPrompt(e.target.value)}
+              value={userPrompt}
+              onChange={(e) => setUserPrompt(e.target.value)}
+              placeholder="Enter what changes you want in your itinerary..."
             />
-            <div className="modal-buttons">
-              <button >Submit</button>
-              <button onClick={() => setIsModalOpen(false)}>Cancel</button>
-            </div>
+            <button className="submit-button" onClick={fetchItinerary} disabled={loading}>
+              {loading ? "Updating..." : "Submit"}
+            </button>
+            <button className="close-button" onClick={() => setIsModalOpen(false)}>
+              Close
+            </button>
           </div>
         </div>
       )}
