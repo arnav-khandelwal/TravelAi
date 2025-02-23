@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
 import { FaPlane, FaSearch, FaCalendarAlt } from 'react-icons/fa';
+import { Cloud } from 'lucide-react';
 import { TypeAnimation } from 'react-type-animation';
 import { useNavigate, Link } from 'react-router-dom';
 import DatePicker from 'react-datepicker';
@@ -16,6 +17,85 @@ import "rsuite/dist/rsuite.min.css";
 import './HomePage.css';
 import generateItinerary from "../../utils/generateItinerary";
 import ChatBot from '../../components/Chatbot/Chatbot.jsx';
+
+const planeVariants = {
+  initial: {
+    x: "-100vw",
+    y: "30vh",
+    scale: 1,
+    rotateY: 0,
+    rotateZ: 0,
+    z: 0
+  },
+  animate: {
+    x: ["-100vw", "0vw", "100vw"],
+    y: ["30vh", "40vh", "20vh", "50vh", "30vh"],
+    scale: [1, 1.2, 0.9, 1.1, 1],
+    rotateY: [0, 10, -10, 5, 0],
+    rotateZ: [0, -15, 15, -5, 0],
+    z: [0, 50, -50, 30, 0],
+    transition: {
+      duration: 10,
+      times: [0, 0.25, 0.5, 0.75, 1],
+      ease: "easeInOut",
+      repeat: Infinity,
+    }
+  }
+};
+
+const cloudVariants = (i) => ({
+  initial: {
+    x: "110vw",
+    y: `${20 + (i * 20)}vh`,
+    scale: 1 + (i * 0.2),
+    rotateY: 0,
+    opacity: 0.9 - (i * 0.1)
+  },
+  animate: {
+    x: "-110vw",
+    y: [
+      `${20 + (i * 20)}vh`,
+      `${15 + (i * 20)}vh`,
+      `${25 + (i * 20)}vh`,
+      `${20 + (i * 20)}vh`
+    ],
+    scale: [
+      1 + (i * 0.2),
+      1.1 + (i * 0.2),
+      0.9 + (i * 0.2),
+      1 + (i * 0.2)
+    ],
+    rotateY: [0, 180, 360],
+    opacity: [
+      0.9 - (i * 0.1),
+      0.7 - (i * 0.1),
+      0.9 - (i * 0.1),
+      0.7 - (i * 0.1)
+    ],
+    transition: {
+      duration: 15 + (i * 3),
+      ease: "linear",
+      times: [0, 0.33, 0.66, 1],
+      repeat: Infinity
+    }
+  }
+});
+
+const starVariants = {
+  initial: {
+    opacity: 0.3,
+    scale: 0.8
+  },
+  animate: {
+    opacity: [0.3, 1, 0.3],
+    scale: [0.8, 1.2, 0.8],
+    transition: {
+      duration: 2,
+      ease: "easeInOut",
+      repeat: Infinity
+    }
+  }
+};
 
 const CustomDateInput = React.forwardRef(({ value, onClick, placeholder }, ref) => (
   <div className="custom-date-input" onClick={onClick} ref={ref}>
@@ -81,28 +161,18 @@ function HomePage() {
   });
   const { errors, validateForm } = useFormValidation();
   const [isLoading, setIsLoading] = useState(false);
+  const [progress, setProgress] = useState(0);
 
-  const planeVariants = {
-    initial: {
-      x: "-50vw",
-      y: "30vh",
-      scale: 0.6,
-      rotate: -10
-    },
-    animate: {
-      x: ["-50vw", "0vw", "30vw", "60vw"],
-      y: ["30vh", "-10vh", "20vh", "-40vh"],
-      scale: [0.6, 1, 0.8, 1.5],
-      rotate: [-10, 15, -20, 5],
-      transition: {
-        duration: 20,
-        times: [0, 0.3, 0.6, 1],
-        ease: "easeInOut",
-        repeat: Infinity,
-        repeatType: "reverse"
-      }
+  useEffect(() => {
+    if (isLoading) {
+      const interval = setInterval(() => {
+        setProgress((prev) => (prev >= 100 ? 0 : prev + 1));
+      }, 30);
+      return () => clearInterval(interval);
+    } else {
+      setProgress(0);
     }
-  };
+  }, [isLoading]);
 
   const handleInputChange = (field, value) => {
     setFormData(prev => ({
@@ -268,23 +338,86 @@ function HomePage() {
 
               {isLoading && (
                 <div className="loading-overlay">
-                  <div className="blurred-background"></div>
+                  <div className="blurred-background" />
+                  
+                  {Array.from({ length: 20 }).map((_, i) => (
+                    <motion.div
+                      key={`star-${i}`}
+                      className="star"
+                      style={{
+                        left: `${Math.random() * 100}%`,
+                        top: `${Math.random() * 100}%`
+                      }}
+                      variants={starVariants}
+                      initial="initial"
+                      animate="animate"
+                    >
+                      
+                    </motion.div>
+                  ))}
+
+                  {[0, 1, 2, 3, 4].map((i) => (
+                    <motion.div
+                      key={`cloud-${i}`}
+                      className={`cloud depth-${i}`}
+                      variants={cloudVariants(i)}
+                      initial="initial"
+                      animate="animate"
+                      style={{
+                        perspective: "1000px",
+                        transformStyle: "preserve-3d"
+                      }}
+                    >
+                      <Cloud
+                        size={48 + (i * 8)}
+                        className="cloud-icon"
+                      />
+                    </motion.div>
+                  ))}
+
                   <motion.div 
                     className="flying-plane"
                     variants={planeVariants}
                     initial="initial"
                     animate="animate"
+                    style={{
+                      perspective: "1000px",
+                      transformStyle: "preserve-3d"
+                    }}
                   >
                     ✈️
                   </motion.div>
+
                   <motion.div 
                     className="loading-text"
                     initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.5, delay: 0.2 }}
+                    animate={{ 
+                      opacity: 1,
+                      y: 0,
+                      rotateX: [0, 10, 0],
+                      scale: [1, 1.05, 1]
+                    }}
+                    transition={{
+                      duration: 2,
+                      repeat: Infinity,
+                      ease: "easeInOut"
+                    }}
                   >
-                    Generating Itinerary...
+                    <span className="loading-text-gradient">
+                      Creating Your Dream Journey
+                    </span>
                   </motion.div>
+
+                  <div className="progress-container">
+                    <div className="progress-bar">
+                      <motion.div
+                        className="progress-fill"
+                        initial={{ width: 0 }}
+                        animate={{ width: `${progress}%` }}
+                        transition={{ duration: 0.1 }}
+                      />
+                    </div>
+                  </div>
                 </div>
               )}
 
@@ -374,7 +507,6 @@ function HomePage() {
           <p>&copy; 2024 TravelAI. All rights reserved.</p>
         </div>
       </footer>
-
     </div>
   );
 }
