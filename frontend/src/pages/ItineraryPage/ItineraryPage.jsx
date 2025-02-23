@@ -18,7 +18,9 @@ function ItineraryPage() {
   const slideRef = useRef(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [aiPrompt, setAiPrompt] = useState("");
-
+  const [selectedDepartureFlightIndex, setSelectedDepartureFlightIndex] = useState(null);
+  const [selectedReturnFlightIndex, setSelectedReturnFlightIndex] = useState(null);
+  
   const handleNext = () => {
     setAnimationClass('slide-left');
     setTimeout(() => {
@@ -67,10 +69,26 @@ function ItineraryPage() {
 
   const addToCart = (index) => {
     setSelectedHotelIndex(index);
+    
   };
 
   const removeFromCart = () => {
     setSelectedHotelIndex(null);
+  };
+  const addToCartDepartureFlight = (index) => {
+    setSelectedDepartureFlightIndex(index);
+  };
+
+  const removeFromCartDepartureFlight = () => {
+    setSelectedDepartureFlightIndex(null);
+  };
+
+  const addToCartReturnFlight = (index) => {
+    setSelectedReturnFlightIndex(index);
+  };
+
+  const removeFromCartReturnFlight = () => {
+    setSelectedReturnFlightIndex(null);
   };
 
   useEffect(() => {
@@ -320,6 +338,11 @@ function ItineraryPage() {
             <div className="flight-price">
               <strong>Price:</strong> {flight.price.toLocaleString()}
             </div>
+            {selectedDepartureFlightIndex === index ? (
+                  <button className="remove-from-cart" onClick={removeFromCartDepartureFlight}>Remove from Cart</button>
+                ) : (
+                  <button className="add-to-cart" onClick={() => addToCartDepartureFlight(index)}>Add to Cart</button>
+                )}
           </div>
         ))
       ) : (
@@ -349,7 +372,14 @@ function ItineraryPage() {
             <div className="flight-price">
               <strong>Price:</strong> {flight.price.toLocaleString()}
             </div>
+            {selectedReturnFlightIndex === index ? (
+                  <button className="remove-from-cart" onClick={removeFromCartReturnFlight}>Remove from Cart</button>
+                ) : (
+                  <button className="add-to-cart" onClick={() => addToCartReturnFlight(index)}>Add to Cart</button>
+                )}
           </div>
+          
+          
         ))
       ) : (
         <p>No return flight details available.</p>
