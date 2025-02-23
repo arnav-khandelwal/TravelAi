@@ -26,6 +26,13 @@ TravelAI is an intelligent travel planning platform that simplifies your journey
 | Weather | OpenWeatherMap |
 | Flights | SkyScanner 3 + OpenWeatherMap |
 
+## Future Developments
+
+- **Integrated Payment System**: Using Razorpay's one-to-many model to split payment and book through multiple vendors in a single go.
+- **Enhanced Personalization**: Utilizing user's previous prompts for better future plan generation.
+- **Editable Bookings**: Users will be able to edit hotel and flight parameters using an edit button.
+- **User Dashboard**: A dashboard will be created where users can see their past trips planned, current and past bookings, and payment receipts.
+
 ## 🚀 Getting Started
 
 ### Prerequisites
@@ -51,12 +58,11 @@ cd travelai
 npm install
 ```
 
-3. Create a `.env` file in the root directory and add your API keys:
+3. Create a .env file in the root directory and add your API keys:
 ```env
-VITE_GEMINI_API_KEY=your_gemini_api_key
-VITE_BOOKING_API_KEY=your_booking_api_key
-VITE_OPENWEATHER_API_KEY=your_openweather_api_key
-VITE_SKYSCANNER_API_KEY=your_skyscanner_api_key
+VITE_GEMINI_API_KEY=YOUR_GEMINI_API_KEY
+VITE_RAPID_API_KEY=YOUR_RAPID_API_KEY
+VITE_OPENWEATHER_API_KEY=YOUR_OPENWEATHER_API_KEY
 ```
 
 4. Start the development server
@@ -64,7 +70,7 @@ VITE_SKYSCANNER_API_KEY=your_skyscanner_api_key
 npm run dev
 ```
 
-The application will be available at `http://localhost:5173`
+The application will be available at http://localhost:5173
 
 ### Building for Production
 
@@ -102,7 +108,9 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ## 👥 Authors
 
-- Your Name - *Initial work* - [YourGithub](https://github.com/yourusername)
+- Arnav Khandelwal - [YourGithub](https://github.com/arnav-khandelwal)
+- Aryan Kushwaha - [YourGithub](https://github.com/aryanj33)
+- Janvi Gupta - [YourGithub](https://github.com/janviii09)
 
 ## 🙏 Acknowledgments
 
@@ -110,7 +118,3 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 - Booking.com for hotel data
 - OpenWeatherMap for weather information
 - SkyScanner for flight details
-
-## 📞 Support
-
-For support, email support@travelai.com or join our S
