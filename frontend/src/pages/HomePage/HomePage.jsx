@@ -172,10 +172,9 @@ function HomePage() {
             >
               <TypeAnimation
                 sequence={[
-                  'Smarter Travel Planning',
-                  2000,
-                  'AI-Powered Itineraries',
-                  2000,
+                  "Book Everything at Once", 2000,
+                  "No More Multiple Payments", 2000,
+                  "Smart AI Travel Plans", 2000,
                 ]}
                 wrapper="span"
                 speed={50}
@@ -187,7 +186,7 @@ function HomePage() {
               animate={{ y: 0, opacity: 1 }}
               transition={{ duration: 0.6, delay: 0.4 }}
             >
-              Let AI craft your perfect journey. From hidden gems to popular spots, we've got your dream trip covered.
+              Seamless one-page booking for your perfect journey—discover hidden gems and top destinations through AI-Powered itineraries.
             </motion.p>
             
             <motion.div 

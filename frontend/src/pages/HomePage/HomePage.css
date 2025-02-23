@@ -59,7 +59,7 @@
     font-size: 1.8rem;
   }
   
-.logo-text {
+  .logo-text {
     color: inherit;
     text-decoration: none;
   }
@@ -71,6 +71,7 @@
     text-decoration: none;
     color: inherit;
   }
+  
   .search-form {
     display: flex;
     flex-direction: column;
@@ -110,7 +111,7 @@
     font-size: 0.875rem;
     margin-top: 0.25rem;
   }
-
+  
   nav {
     display: flex;
     gap: 2.5rem;
@@ -198,7 +199,7 @@
   }
   
   .hero h1 {
-    font-size: 3rem;
+    font-size: 2.7rem;
     line-height: 1.2;
     margin-bottom: 1.5rem;
     background: linear-gradient(to right, var(--gradient-start), var(--gradient-end));
@@ -207,6 +208,7 @@
     color: transparent;
     font-weight: 700;
   }
+  
   .custom-date-input {
     display: flex;
     align-items: center;
@@ -224,7 +226,7 @@
     pointer-events: none;
     color: #999; /* Adjust color as needed */
   }
-
+  
   .hero p {
     font-size: 1.25rem;
     color: var(--light-text);
@@ -289,6 +291,7 @@
     box-shadow: 0 4px 6px rgba(37, 99, 235, 0.1);
     height: 45px;
   }
+  
   .loading-overlay {
     position: fixed;
     top: 0;
@@ -322,7 +325,6 @@
     background: #aaa;
     cursor: not-allowed;
   }
-  
   
   .generate-btn:hover {
     transform: translateY(-2px);
@@ -667,6 +669,7 @@
   .react-select__option--is-selected {
     background: var(--primary-color) !important;
   }
+  
   .loading-overlay {
     position: fixed;
     top: 0;
@@ -705,4 +708,3 @@
     z-index: 1001;
     text-align: center;
   }
-  
