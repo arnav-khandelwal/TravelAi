@@ -108,9 +108,9 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ## 👥 Authors
 
-- Arnav Khandelwal - [YourGithub](https://github.com/arnav-khandelwal)
-- Aryan Kushwaha - [YourGithub](https://github.com/aryanj33)
-- Janvi Gupta - [YourGithub](https://github.com/janviii09)
+- Arnav Khandelwal - [arnav-khandelwal](https://github.com/arnav-khandelwal)
+- Aryan Kushwaha - [aryanj33](https://github.com/aryanj33)
+- Janvi Gupta - [janviii09](https://github.com/janviii09)
 
 ## 🙏 Acknowledgments
 
