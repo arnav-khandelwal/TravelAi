@@ -117,24 +117,11 @@ function AuthPage() {
               )}
             </button>
 
-            <div className="auth-divider">
-              <span>or explore with</span>
-            </div>
-
-            <div className="social-buttons">
-              <button type="button" className="google-button">
-                <img src="https://www.google.com/favicon.ico" alt="Google" className="provider-icon" />
-                <span>Google</span>
-              </button>
-              <button type="button" className="facebook-button">
-                <img src="https://www.facebook.com/favicon.ico" alt="Facebook" className="provider-icon" />
-                <span>Facebook</span>
-              </button>
-            </div>
           </form>
 
           <div className="auth-footer">
             <p>Don't have an account? <a href="/signup">Sign up for free</a></p>
+            <p><a href="/">Back to homepage</a></p>
           </div>
         </div>
       </div>
