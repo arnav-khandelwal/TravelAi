@@ -688,70 +688,70 @@
   }
   
   
-  /* Modal Styles */
-  .modal-overlay {
+ /* Modal Overlay (Blurs Background) */
+.modal {
     position: fixed;
     top: 0;
     left: 0;
     width: 100%;
     height: 100%;
-    background: rgba(0, 0, 0, 0.5);
+    background: rgba(0, 0, 0, 0.5); /* Semi-transparent black */
+    backdrop-filter: blur(5px); /* Blurs background */
     display: flex;
-    justify-content: center;
     align-items: center;
+    justify-content: center;
+    z-index: 1000; /* Ensures it's on top */
   }
   
-  .modal {
+  /* Modal Box */
+  .modal-content {
     background: white;
     padding: 20px;
+    border-radius: 10px;
     width: 400px;
-    border-radius: 8px;
     box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.2);
     text-align: center;
+    position: relative;
   }
   
-  .modal h3 {
-    margin-bottom: 12px;
-  }
-  
-  .modal textarea {
+  /* Textarea Styling */
+  textarea {
     width: 100%;
-    height: 80px;
-    padding: 8px;
-    border-radius: 6px;
+    height: 100px;
+    margin: 10px 0;
+    padding: 10px;
+    border-radius: 5px;
     border: 1px solid #ccc;
+    font-size: 16px;
     resize: none;
   }
   
-  .modal-buttons {
-    display: flex;
-    justify-content: space-between;
-    margin-top: 12px;
-  }
-  
-  .modal-buttons button {
-    padding: 8px 12px;
+  /* Button Styles */
+  .submit-button, .close-button {
+    margin-bottom: 10px;
+    padding: 10px 15px;
     border: none;
-    border-radius: 6px;
+    border-radius: 5px;
     cursor: pointer;
-    font-size: 14px;
+    font-size: 16px;
   }
   
-  .modal-buttons button:first-child {
+  .submit-button {
     background-color: #007bff;
     color: white;
   }
   
-  .modal-buttons button:first-child:hover {
+  .close-button {
+    background-color: #dc3545;
+    color: white;
+  }
+  
+  /* Button Hover Effects */
+  .submit-button:hover {
     background-color: #0056b3;
   }
   
-  .modal-buttons button:last-child {
-    background-color: #ddd;
-    color: black;
-  }
-  
-  .modal-buttons button:last-child:hover {
-    background-color: #bbb;
+  .close-button:hover {
+    background-color: #a71d2a;
   }
   

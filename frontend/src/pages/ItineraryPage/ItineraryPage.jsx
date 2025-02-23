@@ -21,10 +21,10 @@ function ItineraryPage() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [userPrompt, setUserPrompt] = useState("");
   const [loading, setLoading] = useState(false);
-  const [aiPrompt, setAiPrompt] = useState("");
   const [selectedDepartureFlightIndex, setSelectedDepartureFlightIndex] = useState(null);
   const [selectedReturnFlightIndex, setSelectedReturnFlightIndex] = useState(null);
-
+  const [days, setDays] = useState([]); // Manages the itinerary days
+  
   const fetchItinerary = async () => {
     if (!userPrompt) return;
 
@@ -55,20 +55,33 @@ function ItineraryPage() {
 
 
     try {
+        setLoading(true);
         const model = genAI.getGenerativeModel({ model: "gemini-pro" });
         const result = await model.generateContent(prompt);
-        const response = await result.response;
-        const newItinerary =  response.text().replace(/```json|```/g, "").trim();
-
-      setDays(newItinerary.days);
-      setIsModalOpen(false);
+        const response = await result.response.text();
+        
+        // Parse the response JSON
+        const newItinerary = JSON.parse(response.replace(/```json|```/g, "").trim());
+        
+        // Update state with new itinerary
+        if (newItinerary.days) {
+            setDays(newItinerary.days);
+            setItineraryData(prev => ({ ...prev, days: newItinerary.days }));
+        } else {
+            console.error("Invalid itinerary format");
+        }
     } catch (error) {
-      console.error("Error fetching new itinerary:", error);
+        console.error("Error fetching new itinerary:", error);
     } finally {
-      setLoading(false);
+        setLoading(false);
+        setIsModalOpen(false);
     }
   };
-  
+
+  useEffect(() => {
+    console.log("Updated Days:", days);
+}, [days]);
+
   const handleNext = () => {
     setAnimationClass('slide-left');
     setTimeout(() => {
@@ -189,9 +202,9 @@ function ItineraryPage() {
     return <div className="loading">Loading itinerary...</div>;
   }
 
-  const { flights = [], weather = {}, days = [], hotels = [] } = itineraryData;
+  const { flights = [], weather = {}, days: itineraryDays = [], hotels = [] } = itineraryData;
   const selectedHotel = selectedHotelIndex !== null ? hotels[selectedHotelIndex] : null;
-
+  const displayedDays = days.length > 0 ? days : itineraryData.days;
   const formatDateTime = (dateTimeStr) => {
     return new Date(dateTimeStr).toLocaleString('en-US', {
       dateStyle: 'long',
@@ -232,34 +245,37 @@ function ItineraryPage() {
         </button>
         </div>
     <br/>
-        {days.length > 0 ? (
-          <div className="slideshow" ref={slideRef}>
-            <div className={`day-card ${animationClass}`}>
-              <div className="day-header">
-                <button className="nav-button" onClick={handlePrevious}>
-                  <FaChevronLeft />
-                </button>
-                <h3>Day {days[currentDayIndex].day}</h3>
-                <button className="nav-button" onClick={handleNext}>
-                  <FaChevronRight />
-                </button>
-              </div>
-              <div className="timeline">
-                {days[currentDayIndex].activities.map((activity, index) => (
-                  <div key={index} className="timeline-item">
-                    <div className="timeline-time">{activity.time}</div>
-                    <div className="timeline-content">
-                      <h4>{activity.activity}</h4>
-                      <p>{activity.details}</p>
-                    </div>
-                  </div>
-                ))}
-              </div>
+    
+    {displayedDays.length > 0 ? (
+    <div className="slideshow" ref={slideRef}>
+        <div className={`day-card ${animationClass}`}>
+        <div className="day-header">
+            <button className="nav-button" onClick={handlePrevious}>
+            <FaChevronLeft />
+            </button>
+            <h3>Day {displayedDays[currentDayIndex].day}</h3>
+            <button className="nav-button" onClick={handleNext}>
+            <FaChevronRight />
+            </button>
+        </div>
+        <div className="timeline">
+            {displayedDays[currentDayIndex].activities.map((activity, index) => (
+            <div key={index} className="timeline-item">
+                <div className="timeline-time">{activity.time}</div>
+                <div className="timeline-content">
+                <h4>{activity.activity}</h4>
+                <p>{activity.details}</p>
+                </div>
             </div>
-          </div>
-        ) : (
-          <p>No itinerary available.</p>
-        )}
+            ))}
+        </div>
+        </div>
+    </div>
+) : (
+    <p>Loading itinerary...</p>
+)}
+
+
 
         {/* AI Input Modal */}
        {/* Modal for Editing Itinerary */}
@@ -370,7 +386,7 @@ function ItineraryPage() {
 
   {/* Flights to the Destination */}
   <div className="flight-category">
-    <h3>Departure</h3>
+    <h3>Departure</h3><hr/><br/>
     <div className="flights-grid">
       {flights.toDestination.length > 0 ? (
         flights.toDestination.map((flight, index) => (
@@ -401,10 +417,10 @@ function ItineraryPage() {
       )}
     </div>
   </div>
-
+  <br/><br/>
   {/* Flights Returning from the Destination */}
   <div className="flight-category">
-    <h3>Return</h3>
+  <h3>Return</h3><hr/><br/>
     <div className="flights-grid">
       {flights.fromDestination.length > 0 ? (
         flights.fromDestination.map((flight, index) => (
