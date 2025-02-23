@@ -2,8 +2,9 @@ import React, { useState, useEffect, useRef } from 'react';
 import { motion } from 'framer-motion';
 import { Link } from 'react-router-dom';
 import './ItineraryPage.css';
-import { FaPlane, FaChevronLeft, FaChevronRight, FaShoppingCart, FaTimes, FaEdit  } from 'react-icons/fa';
+import { FaPlane, FaChevronLeft, FaChevronRight, FaShoppingCart, FaTimes, FaEdit } from 'react-icons/fa';
 import { GoogleGenerativeAI } from "@google/generative-ai";
+
 const genAI = new GoogleGenerativeAI(import.meta.env.VITE_GEMINI_API_KEY);
 
 function ItineraryPage() {
@@ -16,76 +17,69 @@ function ItineraryPage() {
   const [prevTranslate, setPrevTranslate] = useState(0);
   const [animationClass, setAnimationClass] = useState('');
   const [cartOpen, setCartOpen] = useState(false);
-  const [selectedHotelIndex, setSelectedHotelIndex] = useState(null);
-  const slideRef = useRef(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [userPrompt, setUserPrompt] = useState("");
   const [loading, setLoading] = useState(false);
-  const [selectedDepartureFlightIndex, setSelectedDepartureFlightIndex] = useState(null);
-  const [selectedReturnFlightIndex, setSelectedReturnFlightIndex] = useState(null);
-  const [days, setDays] = useState([]); // Manages the itinerary days
-  
+  const [days, setDays] = useState([]); // manages itinerary days
+  const [cartItems, setCartItems] = useState([]); // unified cart state
+
+  const slideRef = useRef(null);
+
+  // Fetch modified itinerary via AI
   const fetchItinerary = async () => {
     if (!userPrompt) return;
-
     setLoading(true);
     const prompt = `You are an intelligent assistant modifying an existing travel itinerary **strictly according to user instructions**. 
 
-    ### **Task**
-    Modify the itinerary **only where requested** and **keep all other details unchanged**.
+### **Task**
+Modify the itinerary **only where requested** and **keep all other details unchanged**.
 
-    ### **User Request**
-    "${userPrompt}"
+### **User Request**
+"${userPrompt}"
 
-    ### **Current Itinerary**
-    ${JSON.stringify({
-        title: itineraryData.title,
-        type: itineraryData.type,
-        purpose: itineraryData.purpose,
-        days: itineraryData.days
-        })}
+### **Current Itinerary**
+${JSON.stringify({
+  title: itineraryData.title,
+  type: itineraryData.type,
+  purpose: itineraryData.purpose,
+  days: itineraryData.days
+})}
 
-    ### **Instructions**
-    1. **Only update the specific changes requested by the user**. If the request is unclear, make minimal logical changes.
-    2. **Do not alter days, times, or activities unless specifically mentioned**.
-    3. **Return valid JSON with the same structure**, preserving existing information.
-    4. **Ensure the response is under 4000 characters** and properly formatted.
+### **Instructions**
+1. **Only update the specific changes requested by the user**. If the request is unclear, make minimal logical changes.
+2. **Do not alter days, times, or activities unless specifically mentioned**.
+3. **Return valid JSON with the same structure**, preserving existing information.
+4. **Ensure the response is under 4000 characters** and properly formatted.
 
-    **Return only the modified JSON output just like the current itinerary. No extra text.**`;
-
+**Return only the modified JSON output just like the current itinerary. No extra text.**`;
 
     try {
-        setLoading(true);
-        const model = genAI.getGenerativeModel({ model: "gemini-pro" });
-        const result = await model.generateContent(prompt);
-        const response = await result.response.text();
-        
-        // Parse the response JSON
-        const newItinerary = JSON.parse(response.replace(/```json|```/g, "").trim());
-        
-        // Update state with new itinerary
-        if (newItinerary.days) {
-            setDays(newItinerary.days);
-            setItineraryData(prev => ({ ...prev, days: newItinerary.days }));
-        } else {
-            console.error("Invalid itinerary format");
-        }
+      const model = genAI.getGenerativeModel({ model: "gemini-pro" });
+      const result = await model.generateContent(prompt);
+      const response = await result.response.text();
+      const newItinerary = JSON.parse(response.replace(/```json|```/g, "").trim());
+      if (newItinerary.days) {
+        setDays(newItinerary.days);
+        setItineraryData(prev => ({ ...prev, days: newItinerary.days }));
+      } else {
+        console.error("Invalid itinerary format");
+      }
     } catch (error) {
-        console.error("Error fetching new itinerary:", error);
+      console.error("Error fetching new itinerary:", error);
     } finally {
-        setLoading(false);
-        setIsModalOpen(false);
+      setLoading(false);
+      setIsModalOpen(false);
     }
   };
 
   useEffect(() => {
     console.log("Updated Days:", days);
-}, [days]);
+  }, [days]);
 
   const handleNext = () => {
     setAnimationClass('slide-left');
     setTimeout(() => {
-      setCurrentDayIndex((currentDayIndex + 1) % days.length);
+      setCurrentDayIndex((currentDayIndex + 1) % displayedDays.length);
       setAnimationClass('');
     }, 500);
   };
@@ -93,7 +87,7 @@ function ItineraryPage() {
   const handlePrevious = () => {
     setAnimationClass('slide-right');
     setTimeout(() => {
-      setCurrentDayIndex((currentDayIndex - 1 + days.length) % days.length);
+      setCurrentDayIndex((currentDayIndex - 1 + displayedDays.length) % displayedDays.length);
       setAnimationClass('');
     }, 500);
   };
@@ -128,28 +122,52 @@ function ItineraryPage() {
     setCartOpen(!cartOpen);
   };
 
-  const addToCart = (index) => {
-    setSelectedHotelIndex(index);
-    
+  // Add an item (hotel or flight) to the cart if not already added
+  const addToCart = (item) => {
+    setCartItems(prev => {
+      // Check if item of same type and category already exists
+      const exists = prev.some(cartItem => 
+        (item.type === 'hotel' && cartItem.type === 'hotel') || // Only one hotel allowed
+        (item.type === 'flight' && cartItem.type === 'flight' && cartItem.category === item.category) // One flight per category
+      );
+
+      if (exists) {
+        alert(`You can only add one ${item.type}${item.category ? ` for ${item.category}` : ''} to the cart.`);
+        return prev;
+      }
+
+      // Convert price to number before adding to cart
+      const price = typeof item.price === 'string' 
+        ? parseFloat(item.price.replace(/[^0-9.-]+/g, ''))
+        : Number(item.price);
+
+      return [...prev, { ...item, price }];
+    });
   };
 
-  const removeFromCart = () => {
-    setSelectedHotelIndex(null);
-  };
-  const addToCartDepartureFlight = (index) => {
-    setSelectedDepartureFlightIndex(index);
-  };
-
-  const removeFromCartDepartureFlight = () => {
-    setSelectedDepartureFlightIndex(null);
+  // Remove an item from the cart
+  const removeFromCart = (itemToRemove) => {
+    setCartItems(prev =>
+      prev.filter(item => !(item.type === itemToRemove.type && 
+        item.index === itemToRemove.index && 
+        item.category === itemToRemove.category))
+    );
   };
 
-  const addToCartReturnFlight = (index) => {
-    setSelectedReturnFlightIndex(index);
-  };
+  // Calculate the total price from all items in the cart
+  const totalPrice = cartItems.reduce((total, item) => {
+    const price = typeof item.price === 'string' 
+      ? parseFloat(item.price.replace(/[^0-9.-]+/g, ''))
+      : Number(item.price);
+    return total + price;
+  }, 0);
 
-  const removeFromCartReturnFlight = () => {
-    setSelectedReturnFlightIndex(null);
+  const handleCheckout = () => {
+    if (cartItems.length === 0) {
+      alert('Your cart is empty!');
+      return;
+    }
+    alert(`Proceeding to checkout! Total: ${totalPrice.toLocaleString()}`);
   };
 
   useEffect(() => {
@@ -160,7 +178,6 @@ function ItineraryPage() {
       slide.addEventListener('mouseup', handleMouseUp);
       slide.addEventListener('mouseleave', handleMouseUp);
     }
-
     return () => {
       if (slide) {
         slide.removeEventListener('mousedown', handleMouseDown);
@@ -175,7 +192,6 @@ function ItineraryPage() {
     const handleScroll = () => {
       setScrolled(window.scrollY > 50);
     };
-
     window.addEventListener('scroll', handleScroll);
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
@@ -185,7 +201,6 @@ function ItineraryPage() {
       const savedItinerary = localStorage.getItem("generatedItinerary");
       if (savedItinerary) {
         const parsedItinerary = JSON.parse(savedItinerary);
-        
         if (parsedItinerary && parsedItinerary.days) {
           setItineraryData(parsedItinerary);
           console.log("Loaded Itinerary:", parsedItinerary);
@@ -202,8 +217,7 @@ function ItineraryPage() {
     return <div className="loading">Loading itinerary...</div>;
   }
 
-  const { flights = [], weather = {}, days: itineraryDays = [], hotels = [] } = itineraryData;
-  const selectedHotel = selectedHotelIndex !== null ? hotels[selectedHotelIndex] : null;
+  const { flights = {}, weather = {}, days: itineraryDays = [], hotels = [] } = itineraryData;
   const displayedDays = days.length > 0 ? days : itineraryData.days;
   const formatDateTime = (dateTimeStr) => {
     return new Date(dateTimeStr).toLocaleString('en-US', {
@@ -212,13 +226,13 @@ function ItineraryPage() {
     });
   };
 
+  // Check if an item is already in the cart (useful for button toggling)
+  const isItemInCart = (type, index, category = null) => {
+    return cartItems.some(item => item.type === type && item.index === index && item.category === category);
+  };
+
   return (
-    <motion.div 
-      className="itinerary-page"
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      transition={{ duration: 0.6 }}
-    >
+    <motion.div className="itinerary-page" initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.6 }}>
       <header className={`header ${scrolled ? 'scrolled' : ''}`}>
         <div className="logo">
           <Link to="/" className="logo-link">
@@ -238,66 +252,60 @@ function ItineraryPage() {
       </header>
 
       <section className="section daily-section">
-      <div className="section-header">
-        <h2>Daily Itinerary</h2>
-        <button className="edit-button" onClick={() => setIsModalOpen(true)}>
+        <div className="section-header">
+          <h2>Daily Itinerary</h2>
+          <button className="edit-button" onClick={() => setIsModalOpen(true)}>
             <FaEdit /> Edit Itinerary
-        </button>
+          </button>
         </div>
-    <br/>
-    
-    {displayedDays.length > 0 ? (
-    <div className="slideshow" ref={slideRef}>
-        <div className={`day-card ${animationClass}`}>
-        <div className="day-header">
-            <button className="nav-button" onClick={handlePrevious}>
-            <FaChevronLeft />
-            </button>
-            <h3>Day {displayedDays[currentDayIndex].day}</h3>
-            <button className="nav-button" onClick={handleNext}>
-            <FaChevronRight />
-            </button>
-        </div>
-        <div className="timeline">
-            {displayedDays[currentDayIndex].activities.map((activity, index) => (
-            <div key={index} className="timeline-item">
-                <div className="timeline-time">{activity.time}</div>
-                <div className="timeline-content">
-                <h4>{activity.activity}</h4>
-                <p>{activity.details}</p>
-                </div>
+        <br/>
+        {displayedDays.length > 0 ? (
+          <div className="slideshow" ref={slideRef}>
+            <div className={`day-card ${animationClass}`}>
+              <div className="day-header">
+                <button className="nav-button" onClick={handlePrevious}>
+                  <FaChevronLeft />
+                </button>
+                <h3>Day {displayedDays[currentDayIndex].day}</h3>
+                <button className="nav-button" onClick={handleNext}>
+                  <FaChevronRight />
+                </button>
+              </div>
+              <div className="timeline">
+                {displayedDays[currentDayIndex].activities.map((activity, index) => (
+                  <div key={index} className="timeline-item">
+                    <div className="timeline-time">{activity.time}</div>
+                    <div className="timeline-content">
+                      <h4>{activity.activity}</h4>
+                      <p>{activity.details}</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
             </div>
-            ))}
-        </div>
-        </div>
-    </div>
-) : (
-    <p>Loading itinerary...</p>
-)}
-
-
-
-        {/* AI Input Modal */}
-       {/* Modal for Editing Itinerary */}
-       {isModalOpen && (
-        <div className="modal">
-          <div className="modal-content">
-            <h3>Edit Your Itinerary</h3>
-            <textarea
-              value={userPrompt}
-              onChange={(e) => setUserPrompt(e.target.value)}
-              placeholder="Enter what changes you want in your itinerary..."
-            />
-            <button className="submit-button" onClick={fetchItinerary} disabled={loading}>
-              {loading ? "Updating..." : "Submit"}
-            </button>
-            <button className="close-button" onClick={() => setIsModalOpen(false)}>
-              Close
-            </button>
           </div>
-        </div>
-      )}
+        ) : (
+          <p>Loading itinerary...</p>
+        )}
 
+        {isModalOpen && (
+          <div className="modal">
+            <div className="modal-content">
+              <h3>Edit Your Itinerary</h3>
+              <textarea
+                value={userPrompt}
+                onChange={(e) => setUserPrompt(e.target.value)}
+                placeholder="Enter what changes you want in your itinerary..."
+              />
+              <button className="submit-button" onClick={fetchItinerary} disabled={loading}>
+                {loading ? "Updating..." : "Submit"}
+              </button>
+              <button className="close-button" onClick={() => setIsModalOpen(false)}>
+                Close
+              </button>
+            </div>
+          </div>
+        )}
       </section>
 
       <section className="section weather-section">
@@ -357,17 +365,23 @@ function ItineraryPage() {
                   <div>
                     <strong>Amenities:</strong> {hotel.amenities.join(", ")}
                   </div>
-                  {selectedHotelIndex === index ? (
+                  {isItemInCart("hotel", index, null) ? (
                     <button
                       className="remove-from-cart"
-                      onClick={removeFromCart}
+                      onClick={() => removeFromCart({ type: "hotel", index, category: null })}
                     >
                       Remove from Cart
                     </button>
                   ) : (
                     <button
                       className="add-to-cart"
-                      onClick={() => addToCart(index)}
+                      onClick={() => addToCart({ 
+                        type: "hotel", 
+                        index, 
+                        category: null, 
+                        details: hotel, 
+                        price: parseFloat(hotel.price.toString().replace(/[^0-9.-]+/g, ''))
+                      })}
                     >
                       Add to Cart
                     </button>
@@ -382,78 +396,107 @@ function ItineraryPage() {
       </section>
 
       <section className="section flights-section">
-  <h2>Flight Information</h2>
-
-  {/* Flights to the Destination */}
-  <div className="flight-category">
-    <h3>Departure</h3><hr/><br/>
-    <div className="flights-grid">
-      {flights.toDestination.length > 0 ? (
-        flights.toDestination.map((flight, index) => (
-          <div key={index} className="flight-card">
-            <div className="flight-header">
-              <h3>{flight.airline}</h3>
-            </div>
-            <div className="flight-times">
-              <div>
-                <strong>Departure:</strong> {flight.departure} at {formatDateTime(flight.depTime)}
-              </div>
-              <div>
-                <strong>Arrival:</strong> {flight.arrival} at {formatDateTime(flight.arrTime)}
-              </div>
-            </div>
-            <div className="flight-price">
-              <strong>Price:</strong> {flight.price.toLocaleString()}
-            </div>
-            {selectedDepartureFlightIndex === index ? (
-                  <button className="remove-from-cart" onClick={removeFromCartDepartureFlight}>Remove from Cart</button>
-                ) : (
-                  <button className="add-to-cart" onClick={() => addToCartDepartureFlight(index)}>Add to Cart</button>
-                )}
+        <h2>Flight Information</h2>
+        <div className="flight-category">
+          <h3>Departure</h3>
+          <hr/><br/>
+          <div className="flights-grid">
+            {flights.toDestination && flights.toDestination.length > 0 ? (
+              flights.toDestination.map((flight, index) => (
+                <div key={index} className="flight-card">
+                  <div className="flight-header">
+                    <h3>{flight.airline}</h3>
+                  </div>
+                  <div className="flight-times">
+                    <div>
+                      <strong>Departure:</strong> {flight.departure} at {formatDateTime(flight.depTime)}
+                    </div>
+                    <div>
+                      <strong>Arrival:</strong> {flight.arrival} at {formatDateTime(flight.arrTime)}
+                    </div>
+                  </div>
+                  <div className="flight-price">
+                    <strong>Price:</strong> {flight.price.toLocaleString()}
+                  </div>
+                  {isItemInCart("flight", index, "departure") ? (
+                    <button
+                      className="remove-from-cart"
+                      onClick={() => removeFromCart({ type: "flight", index, category: "departure" })}
+                    >
+                      Remove from Cart
+                    </button>
+                  ) : (
+                    <button
+                      className="add-to-cart"
+                      onClick={() => addToCart({ 
+                        type: "flight", 
+                        index, 
+                        category: "departure", 
+                        details: flight, 
+                        price: parseFloat(flight.price.toString().replace(/[^0-9.-]+/g, ''))
+                      })}
+                    >
+                      Add to Cart
+                    </button>
+                  )}
+                </div>
+              ))
+            ) : (
+              <p>No departure flight details available.</p>
+            )}
           </div>
-        ))
-      ) : (
-        <p>No flight details available.</p>
-      )}
-    </div>
-  </div>
-  <br/><br/>
-  {/* Flights Returning from the Destination */}
-  <div className="flight-category">
-  <h3>Return</h3><hr/><br/>
-    <div className="flights-grid">
-      {flights.fromDestination.length > 0 ? (
-        flights.fromDestination.map((flight, index) => (
-          <div key={index} className="flight-card">
-            <div className="flight-header">
-              <h3>{flight.airline}</h3>
-            </div>
-            <div className="flight-times">
-              <div>
-                <strong>Departure:</strong> {flight.departure} at {formatDateTime(flight.depTime)}
-              </div>
-              <div>
-                <strong>Arrival:</strong> {flight.arrival} at {formatDateTime(flight.arrTime)}
-              </div>
-            </div>
-            <div className="flight-price">
-              <strong>Price:</strong> {flight.price.toLocaleString()}
-            </div>
-            {selectedReturnFlightIndex === index ? (
-                  <button className="remove-from-cart" onClick={removeFromCartReturnFlight}>Remove from Cart</button>
-                ) : (
-                  <button className="add-to-cart" onClick={() => addToCartReturnFlight(index)}>Add to Cart</button>
-                )}
+        </div>
+        <br/><br/>
+        <div className="flight-category">
+          <h3>Return</h3>
+          <hr/><br/>
+          <div className="flights-grid">
+            {flights.fromDestination && flights.fromDestination.length > 0 ? (
+              flights.fromDestination.map((flight, index) => (
+                <div key={index} className="flight-card">
+                  <div className="flight-header">
+                    <h3>{flight.airline}</h3>
+                  </div>
+                  <div className="flight-times">
+                    <div>
+                      <strong>Departure:</strong> {flight.departure} at {formatDateTime(flight.depTime)}
+                    </div>
+                    <div>
+                      <strong>Arrival:</strong> {flight.arrival} at {formatDateTime(flight.arrTime)}
+                    </div>
+                  </div>
+                  <div className="flight-price">
+                    <strong>Price:</strong> {flight.price.toLocaleString()}
+                  </div>
+                  {isItemInCart("flight", index, "return") ? (
+                    <button
+                      className="remove-from-cart"
+                      onClick={() => removeFromCart({ type: "flight", index, category: "return" })}
+                    >
+                      Remove from Cart
+                    </button>
+                  ) : (
+                    <button
+                      className="add-to-cart"
+                      onClick={() => addToCart({ 
+                        type: "flight", 
+                        index, 
+                        category: "return", 
+                        details: flight, 
+                        price: parseFloat(flight.price.toString().replace(/[^0-9.-]+/g, ''))
+                      })}
+                    >
+                      Add to Cart
+                    </button>
+                  )}
+                </div>
+              ))
+            ) : (
+              <p>No return flight details available.</p>
+            )}
           </div>
-          
-          
-        ))
-      ) : (
-        <p>No return flight details available.</p>
-      )}
-    </div>
-  </div>
-</section>
+        </div>
+      </section>
 
       <div className="action-buttons">
         <button onClick={() => window.print()} className="print-btn">
@@ -474,7 +517,7 @@ function ItineraryPage() {
 
       <div className="cart-icon-container" onClick={toggleCart}>
         <FaShoppingCart size={24} />
-        {selectedHotel && <span className="cart-count">1</span>}
+        {cartItems.length > 0 && <span className="cart-count">{cartItems.length}</span>}
       </div>
 
       <div className={`cart-overlay ${cartOpen ? 'open' : ''}`} onClick={toggleCart}></div>
@@ -486,22 +529,54 @@ function ItineraryPage() {
             <FaTimes />
           </button>
         </div>
-        {!selectedHotel ? (
-          <p>Your cart is empty</p>
+
+        {cartItems.length === 0 ? (
+          <div className="cart-empty">
+            <p>Your cart is empty</p>
+          </div>
         ) : (
-          <div className="cart-item">
-            <img src={selectedHotel.image} alt={selectedHotel.name} className="cart-item-image" />
-            <div className="cart-item-details">
-              <h4>{selectedHotel.name}</h4>
-              <p>{selectedHotel.location}</p>
-              <div className="cart-item-price">
-                {selectedHotel.currency} {selectedHotel.price.toLocaleString()} /-
+          <>
+            <div className="cart-items-container">
+              {cartItems.map((item, idx) => (
+                <div className="cart-item" key={idx}>
+                  {item.type === "hotel" && (
+        <img 
+          src={item.details.image || ""} 
+          alt={item.details.name || "Hotel"} 
+          className="cart-item-image" 
+        />
+      )}
+                  <div className="cart-item-details">
+                    <h4>{item.type === "hotel" ? item.details.name : item.details.airline}</h4>
+                    <p>
+                      {item.type === "hotel" 
+                        ? item.details.location 
+                        : item.category === "departure" 
+                          ? "Departure Flight" 
+                          : "Return Flight"}
+                    </p>
+                    <div className="cart-item-price">
+                      {item.details.currency || "$"} {item.price.toLocaleString()} /-
+                    </div>
+                    <button 
+                      className="remove-from-cart" 
+                      onClick={() => removeFromCart(item)}
+                    >
+                      Remove from Cart
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
+            <div className="cart-footer">
+              <div className="cart-total">
+                Total: {cartItems[0]?.details?.currency || "$"} {totalPrice.toLocaleString()} /-
               </div>
-              <button className="remove-from-cart" onClick={removeFromCart}>
-                Remove from Cart
+              <button className="checkout-btn" onClick={handleCheckout}>
+                Proceed to Checkout
               </button>
             </div>
-          </div>
+          </>
         )}
       </div>
     </motion.div>
