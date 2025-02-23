@@ -15,6 +15,7 @@ import AsyncSelect from 'react-select/async';
 import "rsuite/dist/rsuite.min.css";
 import './HomePage.css';
 import generateItinerary from "../../utils/generateItinerary";
+import ChatBot from '../../components/Chatbot/Chatbot.jsx';
 
 const CustomDateInput = React.forwardRef(({ value, onClick, placeholder }, ref) => (
   <div className="custom-date-input" onClick={onClick} ref={ref}>
@@ -188,7 +189,7 @@ function HomePage() {
             >
               Seamless one-page booking for your perfect journey—discover hidden gems and top destinations through AI-Powered itineraries.
             </motion.p>
-            
+            <ChatBot />
             <motion.div 
               className="search-form"
               initial={{ y: 20, opacity: 0 }}
@@ -306,7 +307,7 @@ function HomePage() {
               </button>
             </motion.div>
           </div>
-          
+
           <motion.div 
             className="globe-container"
             initial={{ opacity: 0, scale: 0.8 }}
@@ -373,7 +374,7 @@ function HomePage() {
           <p>&copy; 2024 TravelAI. All rights reserved.</p>
         </div>
       </footer>
-      <chatbot />
+
     </div>
   );
 }

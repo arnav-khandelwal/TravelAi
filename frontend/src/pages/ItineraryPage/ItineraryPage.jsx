@@ -5,6 +5,8 @@ import './ItineraryPage.css';
 import { FaPlane, FaChevronLeft, FaChevronRight, FaShoppingCart, FaTimes, FaEdit } from 'react-icons/fa';
 import { GoogleGenerativeAI } from "@google/generative-ai";
 
+
+
 const genAI = new GoogleGenerativeAI(import.meta.env.VITE_GEMINI_API_KEY);
 
 function ItineraryPage() {

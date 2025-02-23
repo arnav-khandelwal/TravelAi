@@ -1,0 +1,20 @@
+{
+  "name": "travelai",
+  "version": "1.0.0",
+  "description": "TravelAI is an intelligent travel planning platform that simplifies your journey planning by integrating multiple services into a single, cohesive experience. From flights and hotels to activities and weather forecasts, TravelAI handles all aspects of your trip planning with AI-powered assistance.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/arnav-khandelwal/TravelAi.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/arnav-khandelwal/TravelAi/issues"
+  },
+  "homepage": "https://github.com/arnav-khandelwal/TravelAi#readme"
+}
