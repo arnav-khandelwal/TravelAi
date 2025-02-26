@@ -56,7 +56,7 @@ ${JSON.stringify({
 **Return only the modified JSON output just like the current itinerary. No extra text.**`;
 
     try {
-      const model = genAI.getGenerativeModel({ model: "gemini-pro" });
+      const model = genAI.getGenerativeModel({ model: "gemini-1.5-pro-002" });
       const result = await model.generateContent(prompt);
       const response = await result.response.text();
       const newItinerary = JSON.parse(response.replace(/```json|```/g, "").trim());
