@@ -190,7 +190,7 @@ const generateItinerary = async (formData, setIsLoading, navigate) => {
                         `;
 
         const fetchItinerary = async () => {
-            const model = genAI.getGenerativeModel({ model: "gemini-1.5-pro-002" });
+            const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
             const result = await model.generateContent(prompt);
             const response = await result.response;
             return response.text().replace(/```json|```/g, "").trim();
