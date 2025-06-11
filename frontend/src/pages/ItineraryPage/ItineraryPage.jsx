@@ -338,7 +338,7 @@ ${JSON.stringify({
               </div>
             </>
           ) : (
-            <p>No weather details available.</p>
+            <p>There was a problem fetching weather data right now, pleaese check back later.</p>
           )}
         </div>
       </section>
@@ -392,7 +392,7 @@ ${JSON.stringify({
               </div>
             ))
           ) : (
-            <p>No hotel details available.</p>
+            <p>There was a problem fetching hotels right now, pleaese check back later.</p>
           )}
         </div>
       </section>
@@ -444,7 +444,7 @@ ${JSON.stringify({
                 </div>
               ))
             ) : (
-              <p>No departure flight details available.</p>
+              <p>There was a problem fetching flights right now, pleaese check back later.</p>
             )}
           </div>
         </div>
@@ -494,7 +494,7 @@ ${JSON.stringify({
                 </div>
               ))
             ) : (
-              <p>No return flight details available.</p>
+              <p>There was a problem fetching flights right now, pleaese check back later.</p>
             )}
           </div>
         </div>
